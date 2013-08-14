@@ -1,0 +1,11 @@
+commit e7ce03c4bdb3dccfc76cb64cbc838a321edd95dd
+Author: Eugene Frolov <efrolov@mirantis.com>
+Date:   Wed Aug 14 15:05:25 2013 +0400
+
+    NBL-40 Create skeleton of the DNRM Supervisor service
+
+commit be73c2ca74604c05ce09585491e4a5bda86eb229
+Author: irobot <irobot@mirantis.com>
+Date:   Tue Aug 13 13:24:23 2013 +0400
+
+    Inherit access from vyatta-niblick/project-config

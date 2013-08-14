@@ -1,0 +1,10 @@
+Paste
+PasteDeploy>=1.5.0
+Routes>=1.12.3
+eventlet>=0.13.0
+python-keystoneclient>=0.3.0
+WebOb>=1.2
+Babel>=0.9.6
+
+-f http://tarballs.openstack.org/oslo.config/oslo.config-1.2.0a3.tar.gz#egg=oslo.config-1.2.0a3
+oslo.config>=1.2.0a3
