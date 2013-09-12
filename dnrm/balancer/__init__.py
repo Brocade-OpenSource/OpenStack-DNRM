@@ -14,27 +14,5 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-"""
-Module contains task classes used by balancer.
-"""
-
-import abc
-
-
-class Task(object):
-    """Base class for task objects."""
-
-    __metaclass__ = abc.ABCMeta
-
-    @abc.abstractmethod
-    def execute(self):
-        """Called by task queue workers when they start to work on task."""
-        pass
-
-
-class StartTask(Task):
-    pass
-
-
-class StopTask(Task):
-    pass
+from dnrm.balancer.balancer import *  # noqa
+from dnrm.balancer.manager import *  # noqa

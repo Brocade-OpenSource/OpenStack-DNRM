@@ -38,6 +38,10 @@ core_opts = [
                help=_("The type of authentication to use")),
     cfg.IntOpt('task_queue_timeout', default=5,
                help=_("Number of seconds for worker to wait on task queue.")),
+    cfg.StrOpt('balancer', default='dnrm.balancer.DNRMBalancer',
+               help=_("The class of balancer")),
+    cfg.IntOpt('sleep_time', default=30,
+               help=_("The waiting time for a thread in seconds")),
 ]
 
 CONF.register_opts(core_opts)

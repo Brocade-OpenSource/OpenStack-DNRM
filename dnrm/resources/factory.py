@@ -41,7 +41,7 @@ class ResourceFactory(object):
             try:
                 module = importutils.import_module(module_name)
             except Exception:
-                LOG.exception(
+                LOG.debug(
                     _('Failed to import resource module: %s') % module_name)
             for resource_class in module.__dict__.values():
                 try:
