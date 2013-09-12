@@ -37,6 +37,7 @@ core_opts = [
                help=_("The API paste config file to use")),
     cfg.StrOpt('auth_strategy', default='keystone',
                help=_("The type of authentication to use")),
+    cfg.ListOpt('resource_types', help=_('List of available resource types'))
 ]
 
 # Register the configuration options
