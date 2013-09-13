@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+
+cd ../dnrm/db/migrations
+../../../tools/with_venv.sh alembic upgrade head

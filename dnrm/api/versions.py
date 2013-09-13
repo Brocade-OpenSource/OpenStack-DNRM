@@ -1,7 +1,6 @@
-#!/usr/bin/env python
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
-# Copyright 2013 Eugene Frolov <profisphantom@gmail.com>
+# Copyright 2013 OpenStack Foundation.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -16,9 +15,20 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import os
-import sys
-sys.path.insert(0, os.getcwd())
-from dnrm.server import main as server
+from dnrm import wsgi
 
-server()
+
+class VersionController(wsgi.Controller):
+    def __init__(self):
+        super(VersionController, self).__init__()
+
+    def _get_versions(self):
+        return ["v1"]
+
+    def index(self, request):
+        """Return a summary list of API versions."""
+        return {'versions': self._get_versions()}
+
+
+def create_resource():
+    return wsgi.Resource(VersionController())
