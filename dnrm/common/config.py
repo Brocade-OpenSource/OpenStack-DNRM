@@ -66,8 +66,13 @@ def load_paste_app(app_name):
             cannot be loaded from config file
     """
 
-    config_path = os.path.abspath(cfg.CONF.find_file(
-        cfg.CONF.api_paste_config))
+    api_paste_config = cfg.CONF.find_file(cfg.CONF.api_paste_config)
+    if not api_paste_config:
+        msg = (_("Configuration file %(api_paste_config)s not found") %
+               {"api_paste_config": cfg.CONF.api_paste_config})
+        LOG.error(msg)
+        raise RuntimeError(msg)
+    config_path = os.path.abspath(api_paste_config)
     LOG.info(_("Config paste file: %s"), config_path)
 
     try:
