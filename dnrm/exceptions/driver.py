@@ -14,9 +14,16 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+"""
+DNRM Supervisor driver exceptions.
+"""
 
-from dnrm import exceptions
+from dnrm.exceptions.base import SupervisorException
 
 
-class NoKnownApplications(exceptions.SupervisorException):
-    message = _("No known API applications configured.")
+class DriverException(SupervisorException):
+    message = _("Driver invocation error.")
+
+
+class ResourceCheckFailed(DriverException):
+    message = _('Error checking resource status: %(error)s')

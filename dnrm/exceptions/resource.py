@@ -15,8 +15,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from dnrm import exceptions
+"""
+DNRM Supervisor resource and resource factory exceptions.
+"""
+
+from dnrm.exceptions.base import SupervisorException
 
 
-class NoKnownApplications(exceptions.SupervisorException):
-    message = _("No known API applications configured.")
+class InvalidResource(SupervisorException):
+    message = _("Resource validation failed.")
+
+
+class InvalidResourceType(SupervisorException):
+    message = _('Invalid resource type name: %(type_name)s')

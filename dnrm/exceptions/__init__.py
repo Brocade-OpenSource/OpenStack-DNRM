@@ -1,6 +1,6 @@
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
-# Copyright 2011 Nicira Networks, Inc
+# Copyright 2013 OpenStack Foundation.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -14,29 +14,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
-"""
-Base exception handling.
-"""
-
-_FATAL_EXCEPTION_FORMAT_ERRORS = False
-
-
-class RDBException(Exception):
-    """Base RDB Exception.
-
-    To correctly use this class, inherit from it and define
-    a 'message' property. That message will get printf'd
-    with the keyword arguments provided to the constructor.
-    """
-    message = _("An unknown exception occurred.")
-
-    def __init__(self, **kwargs):
-        try:
-            super(RDBException, self).__init__(self.message % kwargs)
-        except Exception:
-            if _FATAL_EXCEPTION_FORMAT_ERRORS:
-                raise
-            else:
-                # at least get the core message out if something happened
-                super(RDBException, self).__init__(self.message)
+from dnrm.exceptions.base import SupervisorException  # noqa
+from dnrm.exceptions.resource import (InvalidResource,  # noqa
+                                      InvalidResourceType)
+from dnrm.exceptions.driver import DriverException, ResourceCheckFailed  # noqa
