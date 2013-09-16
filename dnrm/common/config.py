@@ -37,7 +37,8 @@ core_opts = [
                help=_("The API paste config file to use")),
     cfg.StrOpt('auth_strategy', default='keystone',
                help=_("The type of authentication to use")),
-    cfg.ListOpt('resource_types', help=_('List of available resource types'))
+    cfg.IntOpt('task_queue_timeout', default=5,
+               help=_("Number of seconds for worker to wait on task queue.")),
 ]
 
 # Register the configuration options
