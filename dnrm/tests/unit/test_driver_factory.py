@@ -45,7 +45,7 @@ class ResourceFactoryTestCase(base.BaseTestCase):
             'dnrm.openstack.common.importutils.import_class',
             retval=TestDriver)
         self.get_resource_types = self._mock(
-            'dnrm.common.config.get_resource_types', retval=['foo.bar.test'])
+            'dnrm.common.config.get_drivers_names', retval=['foo.bar.test'])
 
         super(ResourceFactoryTestCase, self).setUp()
 

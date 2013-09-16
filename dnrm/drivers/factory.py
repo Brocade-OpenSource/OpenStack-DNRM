@@ -30,8 +30,7 @@ class DriverFactory(object):
     """
 
     def __init__(self):
-        driver_class_names = config.get_resource_types()
-
+        driver_class_names = config.get_drivers_names()
         self.driver_classes = {}
         self.driver_instances = {}
         for driver_class_name in driver_class_names:

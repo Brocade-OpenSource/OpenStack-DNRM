@@ -126,15 +126,19 @@ class UnusedSetTestCase(base.BaseTestCase):
         self.rf = self.useFixture(
             mockpatch.Patch('dnrm.resources.factory.ResourceFactory',
                             new=mock.Mock())).mock
+        self.df = self.useFixture(
+            mockpatch.Patch('dnrm.drivers.factory.DriverFactory',
+                            new=mock.Mock())).mock
         self.rf.create.return_value = {'id': 'id', 'status': 'status'}
-        self.unused_set = unused_set.UnusedSet('fake-resource_type', self.rf)
+        self.unused_set = unused_set.UnusedSet('fake-resource_type', self.rf,
+                                               self.df)
 
     def test_list_resources_exists(self):
         self.db.resource_find.return_value = [1, 2]
         self.unused_set.list('status', 2)
         filter_opts = {'filters': {'type': 'fake-resource_type', 'pool': None,
                                    'allocated': False, 'processing': False,
-                                   'status': 'status'},
+                                   'deleted': False, 'status': 'status'},
                        'limit': 2}
         self.db.resource_find.assert_called_with(filter_opts)
         self.assertEqual(0, self.rf.create.call_count)
@@ -144,7 +148,7 @@ class UnusedSetTestCase(base.BaseTestCase):
         self.unused_set.list('status')
         filter_opts = {'filters': {'type': 'fake-resource_type', 'pool': None,
                                    'allocated': False, 'processing': False,
-                                   'status': 'status'}}
+                                   'deleted': False, 'status': 'status'}}
         self.db.resource_find.assert_called_with(filter_opts)
         self.assertEqual(0, self.rf.create.call_count)
 
@@ -154,7 +158,7 @@ class UnusedSetTestCase(base.BaseTestCase):
         self.unused_set.get('status', 2)
         filter_opts = {'filters': {'type': 'fake-resource_type',
                                    'pool': None, 'allocated': False,
-                                   'processing': False,
+                                   'processing': False, 'deleted': False,
                                    'status': 'status'},
                        'limit': 2}
         self.db.resource_find.assert_called_with(filter_opts)

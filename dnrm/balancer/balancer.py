@@ -31,7 +31,7 @@ class Balancer(object):
         self.high_watermark = high_watermark
 
     def get_current_pool_size(self):
-        return self._pool.get_count()
+        return self._pool.count()
 
     def get_stopped_resources(self, count):
         return self._unused_set.get(base.STATE_STOPPED, count)

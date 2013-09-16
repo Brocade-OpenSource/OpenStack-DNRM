@@ -31,13 +31,13 @@ class ConfigTestCase(base.BaseTestCase):
                      'dnrm.drivers.fake.FakeDriver': {'low_watermark': 10,
                                                       'high_watermark': 20}}
         opts = [cfg.DictOpt(k, default=v) for k, v in self.opts.items()]
-        CONF.register_opts(opts, 'RESOURCES')
+        CONF.register_opts(opts, 'DRIVERS')
 
-    def test_resource_types(self):
-        types = config.get_resource_types()
-        self.assertListEqual(self.opts.keys(), types)
+    def test_drivers_names(self):
+        names = config.get_drivers_names()
+        self.assertListEqual(self.opts.keys(), names)
 
     def test_resource_config(self):
         for k, v in self.opts.items():
-            conf = config.get_resource_config(k)
+            conf = config.get_driver_config(k)
             self.assertDictEqual(v, conf)

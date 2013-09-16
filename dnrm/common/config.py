@@ -38,6 +38,7 @@ core_opts = [
                help=_("The type of authentication to use")),
     cfg.IntOpt('task_queue_timeout', default=5,
                help=_("Number of seconds for worker to wait on task queue.")),
+    cfg.IntOpt('workers_count', default=5, help=_("Number of workers.")),
     cfg.StrOpt('balancer', default='dnrm.balancer.balancer.DNRMBalancer',
                help=_("The class of balancer")),
     cfg.IntOpt('sleep_time', default=30,
@@ -45,7 +46,13 @@ core_opts = [
 ]
 
 CONF.register_opts(core_opts)
-CONF.register_opts([], 'RESOURCES')
+
+drivers_opts = [
+    cfg.DictOpt('dnrm.drivers.vyatta.vrouter_driver.'
+                'VyattaVRouterDriver', default={'low_watermark': 10,
+                                                'high_watermark': 20}),
+]
+CONF.register_opts(drivers_opts, 'DRIVERS')
 
 
 def parse(args):
@@ -92,9 +99,9 @@ def load_paste_app(app_name):
     return app
 
 
-def get_resource_config(resource_type):
-    return CONF.RESOURCES.get(resource_type, {})
+def get_driver_config(driver_name):
+    return CONF.DRIVERS.get(driver_name, {})
 
 
-def get_resource_types():
-    return list(CONF.RESOURCES)
+def get_drivers_names():
+    return list(CONF.DRIVERS)

@@ -32,9 +32,6 @@ class BalancersManager(object):
     def __init__(self):
         self.balancers = {}
 
-    def get_pool_key(self, pool):
-        return pool.name
-
     @abc.abstractmethod
     def create_balancer(self, pool, unused_set,
                         low_watermark, high_watermark):
@@ -44,7 +41,7 @@ class BalancersManager(object):
         return pool_key in self.balancers
 
     def add_balancer(self, pool, unused_set, low_watermark, high_watermark):
-        pool_key = self.get_pool_key(pool)
+        pool_key = pool.name
         if self.balancer_already_added(pool_key):
             raise ValueError(_('Balancer for %s already added') % pool_key)
         balancer = self.create_balancer(pool, unused_set,

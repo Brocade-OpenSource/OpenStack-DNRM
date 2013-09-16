@@ -14,21 +14,31 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import eventlet
+from oslo.config import cfg
 
-"""
-DNRM Supervisor resource and resource factory exceptions.
-"""
+from dnrm import db
 
-from dnrm.exceptions import base
-
-
-class InvalidResource(base.SupervisorException):
-    message = _("Resource validation failed.")
+CONF = cfg.CONF
 
 
-class InvalidResourceType(base.SupervisorException):
-    message = _('Invalid resource type name: %(type_name)s')
+class Cleaner(object):
+    def __init__(self):
+        self._running = False
 
+    def run(self):
+        while self._running:
+            resources = db.resource_find({'filters': {'processing': False,
+                                                      'deleted': True}})
+            for resource in resources:
+                db.resource_delete(resource['id'])
+            eventlet.sleep(CONF.sleep_time)
 
-class ResourceAllocated(base.SupervisorException):
-    message = _("Resource %(resource_id)s was been allocated.")
+    def start(self):
+        if self._running:
+            return
+        self._running = True
+        eventlet.spawn_n(self.run)
+
+    def stop(self):
+        self._running = False

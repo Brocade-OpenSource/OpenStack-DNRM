@@ -29,13 +29,15 @@ class Pool(object):
         db.resource_update(resource_uuid, {'pool': self.name,
                                            'processing': False})
 
-    def pop(self, count=1):
-        resources = db.resource_find({'filters': {'pool': self.name},
-                                      'limit': count})
+    def pop(self, count=1, processing=True):
+        search_opts = {'filters': {'pool': self.name}}
+        if count is not None:
+            search_opts['limit'] = count
+        resources = db.resource_find(search_opts)
         for resource in resources:
             resource.update(db.resource_update(resource['uuid'],
                                                {'pool': None,
-                                                'processing': True}))
+                                                'processing': processing}))
         return resources
 
     def pop_resource(self, resource_uuid):

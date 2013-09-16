@@ -68,19 +68,19 @@ def resource_get_by_id(id):
 def resource_update(id, values):
     values = values.copy()
     validated_values = {}
-    for key in (models.Resource.FILTER_FIELDS + ['data']):
+    for key in (models.Resource.FILTER_FIELDS):
         try:
             validated_values[key] = values.pop(key)
         except KeyError:
             pass
 
-    if values:
-        raise ValueError(_('Unexpected values for update: %s') %
-                         ', '.join(values.keys()))
-
     session = db_session.get_session()
     with session.begin():
         resource = _resource_get_by_id(id, session=session)
+        if values:
+            data = resource['data']
+            data.update(values)
+            validated_values['data'] = data
         resource.update(validated_values)
 
     return resource

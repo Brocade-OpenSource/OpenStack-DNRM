@@ -18,9 +18,10 @@ from dnrm import db
 
 
 class UnusedSet(object):
-    def __init__(self, resource_type, resource_factory):
-        self.resource_type = resource_type
+    def __init__(self, driver_name, resource_factory, driver_factory):
+        self.driver_name = driver_name
         self.resource_factory = resource_factory
+        self.driver_factory = driver_factory
 
     def get(self, status, count=None):
         resources = self.list(status, count)
@@ -30,17 +31,18 @@ class UnusedSet(object):
         if len(resources) < (count or 0):
             try:
                 for _i in xrange(count):
-                    res = self.resource_factory.create(self.resource_type,
-                                                       status)
-                    res = db.resource_create(self.resource_type, res)
+                    resource_type = self.driver_factory.get_resource_type(
+                        self.driver_name)
+                    res = self.resource_factory.create(resource_type, status)
+                    res = db.resource_create(self.driver_name, res)
                     resources.append(res)
             except NotImplementedError:
                 pass
 
     def list(self, status, count=None):
-        filter_opts = {'filters': {'type': self.resource_type, 'pool': None,
+        filter_opts = {'filters': {'type': self.driver_name, 'pool': None,
                                    'allocated': False, 'processing': False,
-                                   'status': status}}
+                                   'deleted': False, 'status': status}}
         if count is not None:
             filter_opts['limit'] = count
         resources = db.resource_find(filter_opts)

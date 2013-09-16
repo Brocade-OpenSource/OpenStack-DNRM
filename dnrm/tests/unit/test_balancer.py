@@ -32,7 +32,7 @@ class FakePool:
     def pop(self, n):
         pass
 
-    def get_count(self):
+    def count(self):
         pass
 
 
@@ -86,7 +86,7 @@ class BalancerTestCase(base.BaseTestCase):
                              push.mock_calls)
 
     def test_get_current_pool_size(self):
-        with mock.patch.object(self.pool, 'get_count') as get_count:
+        with mock.patch.object(self.pool, 'count') as get_count:
             get_count.return_value = 20
             self.assertEqual(self.balancer.get_current_pool_size(),
                              20)

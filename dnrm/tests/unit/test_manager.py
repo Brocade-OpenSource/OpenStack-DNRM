@@ -14,21 +14,16 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
-"""
-DNRM Supervisor resource and resource factory exceptions.
-"""
-
-from dnrm.exceptions import base
+from dnrm.resources import manager
+from dnrm.tests import base
 
 
-class InvalidResource(base.SupervisorException):
-    message = _("Resource validation failed.")
+class ManagerTestCase(base.DBBaseTestCase):
+    """ResourceFactory test case."""
 
+    def setUp(self):
+        super(ManagerTestCase, self).setUp()
+        self.manager = manager.ResourceManager()
 
-class InvalidResourceType(base.SupervisorException):
-    message = _('Invalid resource type name: %(type_name)s')
-
-
-class ResourceAllocated(base.SupervisorException):
-    message = _("Resource %(resource_id)s was been allocated.")
+    def test_fake(self):
+        self.assertTrue(True)
