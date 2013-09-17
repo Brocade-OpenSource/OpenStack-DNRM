@@ -20,6 +20,9 @@ Module contains task classes used by balancer.
 
 import abc
 
+from dnrm.drivers import factory
+from dnrm import resources
+
 
 class Task(object):
     """Base class for task objects."""
@@ -33,8 +36,59 @@ class Task(object):
 
 
 class StartTask(Task):
-    pass
+    """Task that puts resource to started state."""
+
+    def __init__(self, resource):
+        self._resource = resource
+
+    def execute(self):
+        resource = self._resource
+        driver_factory = factory.DriverFactory()
+        driver = driver_factory.get(resource.resource_type)
+        driver.init(resource)
+        resource.state = resources.STATE_STARTED
+        return resource
 
 
 class StopTask(Task):
-    pass
+    """Task that puts resource to stopped state."""
+
+    def __init__(self, resource):
+        self._resource = resource
+
+    def execute(self):
+        resource = self._resource
+        driver_factory = factory.DriverFactory()
+        driver = driver_factory.get(resource.resource_type)
+        driver.stop(resource)
+        resource.state = resources.STATE_STOPPED
+        return resource
+
+
+class WipeTask(Task):
+    """Task that wipes task state."""
+
+    def __init__(self, resource):
+        self._resource = resource
+
+    def execute(self):
+        resource = self._resource
+        driver_factory = factory.DriverFactory()
+        driver = driver_factory.get(resource.resource_type)
+        driver.wipe(resource)
+        return resource
+
+
+class DeleteTask(Task):
+    """Task that marks resource as deleted."""
+
+    def __init__(self, resource):
+        self._resource = resource
+
+    def execute(self):
+        resource = self._resource
+        driver_factory = factory.DriverFactory()
+        driver = driver_factory.get(resource.resource_type)
+        driver.stop(resource)
+        resource.deleted = True
+        return resource
