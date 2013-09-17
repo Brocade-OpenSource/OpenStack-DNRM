@@ -24,6 +24,9 @@ import fixtures
 from oslo.config import cfg
 import testtools
 
+from dnrm import db
+from dnrm.openstack.common.fixture import config
+
 
 CONF = cfg.CONF
 TRUE_STRING = ['True', '1']
@@ -83,3 +86,19 @@ class BaseTestCase(testtools.TestCase):
         group = kw.pop('group', None)
         for k, v in kw.iteritems():
             CONF.set_override(k, v, group)
+
+
+class DatabaseFixture(config.Config):
+    """Create clean DB before starting test."""
+    def setUp(self):
+        super(DatabaseFixture, self).setUp()
+        db.db_cleanup()
+        self.conf.set_default('connection', "sqlite://", group='database')
+        db.db_drop()
+        db.db_create()
+
+
+class DBBaseTestCase(BaseTestCase):
+    def setUp(self):
+        super(DBBaseTestCase, self).setUp()
+        self.useFixture(DatabaseFixture())
