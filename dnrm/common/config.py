@@ -24,9 +24,8 @@ from paste import deploy
 from dnrm.openstack.common import log as logging
 from dnrm.version import version_info as dnrm_version
 
-
+CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
-
 
 core_opts = [
     cfg.StrOpt('bind_host', default='0.0.0.0',
@@ -41,13 +40,13 @@ core_opts = [
                help=_("Number of seconds for worker to wait on task queue.")),
 ]
 
-# Register the configuration options
-cfg.CONF.register_opts(core_opts)
+CONF.register_opts(core_opts)
+CONF.register_opts([], 'RESOURCES')
 
 
 def parse(args):
-    cfg.CONF(args=args, project='dnrm',
-             version='%%prog %s' % dnrm_version.release_string())
+    CONF(args=args, project='dnrm',
+         version='%%prog %s' % dnrm_version.release_string())
 
 
 def setup_logging(conf):
@@ -68,10 +67,10 @@ def load_paste_app(app_name):
             cannot be loaded from config file
     """
 
-    api_paste_config = cfg.CONF.find_file(cfg.CONF.api_paste_config)
+    api_paste_config = CONF.find_file(CONF.api_paste_config)
     if not api_paste_config:
         msg = (_("Configuration file %(api_paste_config)s not found") %
-               {"api_paste_config": cfg.CONF.api_paste_config})
+               {"api_paste_config": CONF.api_paste_config})
         LOG.error(msg)
         raise RuntimeError(msg)
     config_path = os.path.abspath(api_paste_config)
@@ -87,3 +86,11 @@ def load_paste_app(app_name):
         LOG.exception(msg)
         raise RuntimeError(msg)
     return app
+
+
+def get_resource_config(resource_type):
+    return CONF.RESOURCES.get(resource_type, {})
+
+
+def get_resource_types():
+    return list(CONF.RESOURCES)
