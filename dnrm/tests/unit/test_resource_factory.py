@@ -17,7 +17,8 @@
 import mock
 
 from dnrm import exceptions
-from dnrm import resources
+from dnrm.resources import base as resources
+from dnrm.resources import factory
 from dnrm.tests import base
 
 
@@ -55,7 +56,7 @@ class ResourceFactoryTestCase(base.BaseTestCase):
         self._mock('dnrm.openstack.common.importutils.import_module',
                    side_effect=self.modules)
 
-        return resources.ResourceFactory()
+        return factory.ResourceFactory()
 
     def _mock(self, function, retval=None, side_effect=None):
         patcher = mock.patch(function)

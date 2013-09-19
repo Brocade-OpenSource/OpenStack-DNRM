@@ -14,8 +14,8 @@
 #    under the License.
 
 
-from .base import SupervisorException
+from dnrm.exceptions import base
 
 
-class ResourceNotFound(SupervisorException):
+class ResourceNotFound(base.SupervisorException):
     message = _('Resource with id %(id)s not found.')

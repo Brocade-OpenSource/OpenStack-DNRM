@@ -19,12 +19,12 @@
 DNRM Supervisor resource and resource factory exceptions.
 """
 
-from dnrm.exceptions.base import SupervisorException
+from dnrm.exceptions import base
 
 
-class InvalidResource(SupervisorException):
+class InvalidResource(base.SupervisorException):
     message = _("Resource validation failed.")
 
 
-class InvalidResourceType(SupervisorException):
+class InvalidResourceType(base.SupervisorException):
     message = _('Invalid resource type name: %(type_name)s')

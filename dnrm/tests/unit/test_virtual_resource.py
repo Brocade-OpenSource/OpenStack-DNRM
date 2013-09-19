@@ -15,7 +15,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 from dnrm import exceptions
-from dnrm import resources
+from dnrm.resources import base as resources
+from dnrm.resources import factory
 from dnrm.resources import virtual_resource
 from dnrm.tests import base
 
@@ -25,7 +26,7 @@ class VirtualResourceTestCase(base.BaseTestCase):
 
     @property
     def factory(self):
-        return resources.ResourceFactory()
+        return factory.ResourceFactory()
 
     def test_get(self):
         self.assertEquals(virtual_resource.VirtualResource,

@@ -17,8 +17,9 @@
 
 import mock
 
-from dnrm import balancer
-from dnrm import resources
+from dnrm.balancer import balancer
+from dnrm.balancer import manager
+from dnrm.resources import base as resources
 from dnrm.tests import base
 
 
@@ -376,7 +377,7 @@ class SimpleBalancerTestCase(base.BaseTestCase):
 class BalancersManagerTestCase(base.BaseTestCase):
     def setUp(self):
         super(BalancersManagerTestCase, self).setUp()
-        self.balancers_manager = balancer.DNRMBalancersManager('empty-queue')
+        self.balancers_manager = manager.DNRMBalancersManager('empty-queue')
 
     def tearDown(self):
         del self.balancers_manager

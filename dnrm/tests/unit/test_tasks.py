@@ -17,7 +17,7 @@
 import mock
 
 import dnrm.common.config  # noqa
-from dnrm import resources
+from dnrm.resources import base as resources
 from dnrm import tasks
 from dnrm.tests import base
 

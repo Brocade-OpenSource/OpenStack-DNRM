@@ -14,7 +14,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-from abc import ABCMeta, abstractmethod
+import abc
 
 
 class DriverBase(object):
@@ -22,9 +22,9 @@ class DriverBase(object):
     Base class for DNRM supervisor resource drivers.
     """
 
-    __metaclass__ = ABCMeta
+    __metaclass__ = abc.ABCMeta
 
-    @abstractmethod
+    @abc.abstractmethod
     def init(self, resource):
         """
         Initialize previously stopped resource. E.g. turn power on via IPMI or
@@ -33,7 +33,7 @@ class DriverBase(object):
         """
         pass
 
-    @abstractmethod
+    @abc.abstractmethod
     def stop(self, resource):
         """
         Stops previously initialized resource. E.g. turn power off via IPMI or
@@ -42,7 +42,7 @@ class DriverBase(object):
         """
         pass
 
-    @abstractmethod
+    @abc.abstractmethod
     def wipe(self, resource):
         """
         Return resource to it's initial state.
@@ -50,7 +50,7 @@ class DriverBase(object):
         """
         pass
 
-    @abstractmethod
+    @abc.abstractmethod
     def check(self, resource):
         """
         Checks device availability status and throws exception if device is

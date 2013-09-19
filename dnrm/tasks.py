@@ -21,7 +21,7 @@ Module contains task classes used by balancer.
 import abc
 
 from dnrm.drivers import factory
-from dnrm import resources
+from dnrm.resources import base as resources
 
 
 class Task(object):

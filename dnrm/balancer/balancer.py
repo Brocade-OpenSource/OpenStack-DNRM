@@ -17,7 +17,7 @@
 
 import abc
 
-from dnrm import resources
+from dnrm.resources import base
 from dnrm import tasks
 
 
@@ -34,10 +34,10 @@ class Balancer(object):
         return self._pool.get_count()
 
     def get_stopped_resources(self, count):
-        return self._unused_set.get(resources.STATE_STOPPED, count)
+        return self._unused_set.get(base.STATE_STOPPED, count)
 
     def get_started_resources(self, count=None):
-        return self._unused_set.get(resources.STATE_STARTED, count)
+        return self._unused_set.get(base.STATE_STARTED, count)
 
     def push_resources_into_pool(self, resources):
         for resource in resources:

@@ -16,7 +16,8 @@
 import mock
 
 from dnrm.openstack.common.fixture import mockpatch
-from dnrm import pools
+from dnrm.pools import pool
+from dnrm.pools import unused_set
 from dnrm.tests import base
 
 
@@ -25,7 +26,7 @@ class PoolTestCase(base.BaseTestCase):
         super(PoolTestCase, self).setUp()
         self.db = self.useFixture(mockpatch.Patch('dnrm.pools.pool.db')).mock
         self.pool_name = 'fake-pool'
-        self.pool = pools.Pool(self.pool_name)
+        self.pool = pool.Pool(self.pool_name)
 
     def test_push(self):
         self.pool.push('fake-uuid')
@@ -126,7 +127,7 @@ class UnusedSetTestCase(base.BaseTestCase):
             mockpatch.Patch('dnrm.resources.factory.ResourceFactory',
                             new=mock.Mock())).mock
         self.rf.create.return_value = {'id': 'id', 'status': 'status'}
-        self.unused_set = pools.UnusedSet('fake-resource_type', self.rf)
+        self.unused_set = unused_set.UnusedSet('fake-resource_type', self.rf)
 
     def test_list_resources_exists(self):
         self.db.resource_find.return_value = [1, 2]

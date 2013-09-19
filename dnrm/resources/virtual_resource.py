@@ -17,10 +17,10 @@
 import netaddr
 
 from dnrm import exceptions
-from dnrm import resources
+from dnrm.resources import base
 
 
-class VirtualResource(resources.Resource):
+class VirtualResource(base.Resource):
     """
     Resource represented by Nova VM instance and controlled through REST
     interface.
@@ -30,7 +30,7 @@ class VirtualResource(resources.Resource):
 
     @classmethod
     def create(cls, state, resource_data=None):
-        if state == resources.STATE_STOPPED:
+        if state == base.STATE_STOPPED:
             return cls(resource_data)
         else:
             super(VirtualResource, cls).create(state, resource_data)

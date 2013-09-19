@@ -20,13 +20,14 @@ import os
 import socket
 import time
 
-from dnrm.drivers import base
-from dnrm import exceptions
-from dnrm import resources
 from eventlet import greenthread
+from novaclient.v1_1 import client as novaclient
 from oslo.config import cfg
 
-from novaclient.v1_1 import client as novaclient
+from dnrm.drivers import base
+from dnrm import exceptions
+from dnrm.resources import base as resources
+
 
 cfg.CONF.register_opts([
     cfg.IntOpt('api_port', default=5000,

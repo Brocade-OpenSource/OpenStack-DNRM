@@ -20,7 +20,7 @@ import socket
 
 from dnrm.drivers.vyatta.vrouter_driver import VyattaVRouterDriver
 from dnrm import exceptions
-from dnrm import resources
+from dnrm.resources import base as resources
 from dnrm.resources.virtual_resource import VirtualResource
 from dnrm.tests import base
 from oslo.config import cfg

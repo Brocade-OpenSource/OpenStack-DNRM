@@ -18,10 +18,10 @@
 DNRM Supervisor driver exceptions.
 """
 
-from dnrm.exceptions.base import SupervisorException
+from dnrm.exceptions import base
 
 
-class DriverException(SupervisorException):
+class DriverException(base.SupervisorException):
     message = _("Driver invocation error.")
 
 
