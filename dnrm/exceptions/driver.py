@@ -27,3 +27,7 @@ class DriverException(SupervisorException):
 
 class ResourceCheckFailed(DriverException):
     message = _('Error checking resource status: %(error)s')
+
+
+class InvalidDriverName(DriverException):
+    message = _('Invalid driver name: %(driver_name)s')

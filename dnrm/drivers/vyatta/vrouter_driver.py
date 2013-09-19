@@ -82,6 +82,8 @@ class InstanceBootTimeout(exceptions.DriverException):
 
 
 class VyattaVRouterDriver(base.DriverBase):
+    resource_type = 'nova_vm'
+
     def __init__(self):
         self.management_net = netaddr.IPNetwork(
             cfg.CONF.VROUTER.management_network_cidr)
