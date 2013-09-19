@@ -25,7 +25,7 @@ class ResourceTestCase(base.DBBaseTestCase):
 
     def test_create(self):
         res = db.resource_create('fake-resource-type', {})
-        self.assertEqual('fake-resource-type', res['resource_type'])
+        self.assertEqual('fake-resource-type', res['type'])
 
     def test_delete(self):
         res = db.resource_create('fake-resource-type', {})
@@ -48,7 +48,7 @@ class ResourceTestCase(base.DBBaseTestCase):
         db.resource_create('fake-resource-type', {})
         db.resource_create('fake-resource-type-2', {})
         count = db.resource_count(
-            {'filters': {'resource_type': 'fake-resource-type'}}
+            {'filters': {'type': 'fake-resource-type'}}
         )
         self.assertEqual(2, count)
 
@@ -57,7 +57,7 @@ class ResourceTestCase(base.DBBaseTestCase):
                      for _i in range(2)]
         db.resource_create('fake-resource-type-2', {})
         resources2 = db.resource_find(
-            {'filters': {'resource_type': 'fake-resource-type'}}
+            {'filters': {'type': 'fake-resource-type'}}
         )
         self.assertEqual(2, len(resources2))
         for i, r in enumerate(resources):

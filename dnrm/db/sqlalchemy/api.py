@@ -46,7 +46,7 @@ def model_query(model, session=None, **kwargs):
 
 
 def resource_create(resource_type, resource_data):
-    resource = models.Resource(resource_type=resource_type,
+    resource = models.Resource(type=resource_type,
                                data=resource_data)
     resource.save()
     return resource
@@ -68,15 +68,15 @@ def resource_get_by_id(id):
 def resource_update(id, values):
     values = values.copy()
     validated_values = {}
-    for key in ['state', 'pool', 'processing', 'data']:
+    for key in (models.Resource.FILTER_FIELDS + ['data']):
         try:
             validated_values[key] = values.pop(key)
         except KeyError:
             pass
 
     if values:
-        raise ValueError('Unexpected values for update: {0}'
-                         .format(', '.join(values.keys())))
+        raise ValueError(_('Unexpected values for update: %s') %
+                         ', '.join(values.keys()))
 
     session = db_session.get_session()
     with session.begin():
@@ -101,7 +101,9 @@ def filters_to_sa_condition(model, filter_fields, filter_values):
     for key in filter_fields:
         try:
             column = getattr(columns, key)
-            value = filter_values.pop(key)
+            value = filter_values.pop(key, None)
+            if value is None:
+                continue
             if type(value) == list:
                 expr = column.in_(tuple(value))
             else:
@@ -123,9 +125,7 @@ def make_query(model, kwargs):
     offset = kwargs.pop('offset', None)
 
     if kwargs:
-        raise ValueError('Unexpected kwargs: {0}'
-
-                         .format(', '.join(kwargs.keys())))
+        raise ValueError(_('Unexpected kwargs: %s') % ', '.join(kwargs.keys()))
 
     query = model_query(models.Resource)
 

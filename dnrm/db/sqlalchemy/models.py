@@ -24,6 +24,7 @@ from dnrm.db.sqlalchemy import types
 from dnrm.openstack.common.db.sqlalchemy import models
 from dnrm.openstack.common.db.sqlalchemy import session as db_session
 from dnrm.openstack.common import uuidutils
+from dnrm.resources import base
 
 
 BASE = declarative_base()
@@ -45,7 +46,6 @@ def drop_db():
 
 class DNRMBase(models.ModelBase):
     __table_args__ = {'mysql_engine': 'InnoDB'}
-    pass
 
 
 class HasId(object):
@@ -59,25 +59,18 @@ class HasId(object):
 class Resource(BASE, DNRMBase, HasId):
     __tablename__ = 'resources'
 
-    STATES = ('stopped',
-              'started',
-              'error')
+    STATES = (base.STATE_STARTED, base.STATE_STOPPED, base.STATE_ERROR)
 
     MAX_RESOURCE_TYPE_LENGTH = 250
 
-    FILTER_FIELDS = ['resource_type',
-                     'state',
-                     'pool',
-                     'processing']
+    FILTER_FIELDS = ['type', 'state', 'pool', 'processing', 'allocated',
+                     'deleted']
 
-    resource_type = sa.Column(sa.String(MAX_RESOURCE_TYPE_LENGTH),
-                              nullable=False)
-    state = sa.Column(sa.Enum(*STATES),
-                      nullable=False,
-                      default='stopped')
-    pool = sa.Column(sa.String(MAX_RESOURCE_TYPE_LENGTH),
-                     nullable=True)
-    processing = sa.Column(sa.Boolean,
-                           nullable=False,
-                           default=False)
+    type = sa.Column(sa.String(MAX_RESOURCE_TYPE_LENGTH), nullable=False)
+    state = sa.Column(sa.Enum(*STATES), nullable=False,
+                      default=base.STATE_STOPPED)
+    pool = sa.Column(sa.String(MAX_RESOURCE_TYPE_LENGTH), nullable=True)
+    processing = sa.Column(sa.Boolean, nullable=False, default=False)
+    allocated = sa.Column(sa.Boolean, nullable=False, default=False)
+    deleted = sa.Column(sa.Boolean, nullable=False, default=False)
     data = sa.Column(types.JSON(), default={})
