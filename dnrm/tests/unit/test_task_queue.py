@@ -17,6 +17,7 @@
 import mock
 
 import dnrm.common.config  # noqa
+from dnrm.resources import base as resource_base
 from dnrm import task_queue
 from dnrm import tasks
 from dnrm.tests import base
@@ -25,9 +26,19 @@ from eventlet import greenthread
 from eventlet import queue
 
 
+class TestResource(resource_base.Resource):
+    @classmethod
+    def validate(cls, resource_data):
+        pass
+
+    @classmethod
+    def schema(cls):
+        return {}
+
+
 class TestTask(tasks.Task):
     def execute(self):
-        pass
+        return TestResource({'foo': 'bar'})
 
 
 class MockedEventletTestCase(base.BaseTestCase):
@@ -74,12 +85,21 @@ class QueuedTaskWorkerTestCase(base.BaseTestCase):
     """QueuedTaskWorker test case."""
 
     def setUp(self):
+        self.resource_update = self._mock('dnrm.db.api.resource_update')
         self.config(task_queue_timeout=1)
-        # self.light_queue_cls = self._mock('eventlet.queue.LightQueue')
-        # self.light_queue = self.light_queue_cls.return_value
         self.task_queue = task_queue.TaskQueue()
         self.worker = task_queue.QueuedTaskWorker(self.task_queue)
         super(QueuedTaskWorkerTestCase, self).setUp()
+
+    def _mock(self, function, retval=None, side_effect=None):
+        patcher = mock.patch(function)
+        self.addCleanup(patcher.stop)
+        mock_object = patcher.start()
+        if retval is not None:
+            mock_object.return_value = retval
+        if side_effect is not None:
+            mock_object.side_effect = side_effect
+        return mock_object
 
     def test_start(self):
         task = mock.MagicMock()
@@ -87,6 +107,9 @@ class QueuedTaskWorkerTestCase(base.BaseTestCase):
         self.worker.start()
         greenthread.sleep()
         task.execute.assert_called_once()
+        resource = task.execute.return_value
+        self.resource_update.assert_called_once_with(
+            resource.id, resource.to_dict.return_value)
 
     def test_execute_exception(self):
         task = mock.MagicMock()

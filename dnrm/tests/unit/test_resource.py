@@ -32,7 +32,6 @@ class ResourceTestCase(base.BaseTestCase):
     """Vyatta vRouter driver test case."""
 
     def setUp(self):
-
         super(ResourceTestCase, self).setUp()
 
     def test_getattr(self):
@@ -47,3 +46,11 @@ class ResourceTestCase(base.BaseTestCase):
     def test_getattr_raises(self):
         resource = TestResource()
         self.assertRaises(AttributeError, lambda: resource.foobar)
+
+    def test_to_dict(self):
+        resource = TestResource()
+        resource.id = 'fake-uuid'
+        resource.foo = 'bar'
+        self.assertEquals({'foo': 'bar', 'state': resources.STATE_STOPPED},
+                          resource.to_dict())
+        self.assertEquals('fake-uuid', resource.id)

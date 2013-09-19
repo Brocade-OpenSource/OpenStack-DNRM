@@ -40,6 +40,13 @@ class Resource(object):
     def __setattr__(self, name, value):
         self._data[name] = value
 
+    def to_dict(self):
+        data = {}
+        data.update(self._data)
+        if 'id' in data:
+            del data['id']
+        return data
+
     @classmethod
     def create(cls, state, resource_data=None):
         """

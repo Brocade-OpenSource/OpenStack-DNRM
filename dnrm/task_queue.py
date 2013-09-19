@@ -20,6 +20,7 @@ from eventlet import greenthread
 from eventlet import queue
 from oslo.config import cfg
 
+from dnrm.db import api as db_api
 from dnrm.openstack.common import log
 
 CONF = cfg.CONF
@@ -65,7 +66,9 @@ class QueuedTaskWorker(Worker):
             if task is None:
                 continue
             try:
-                task.execute()
+                resource = task.execute()
+                resource.processing = False
+                db_api.resource_update(resource.id, resource.to_dict())
             except Exception:
                 LOG.exception(_('Exception executing task %s.') % repr(task))
 
