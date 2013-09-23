@@ -29,7 +29,7 @@ class Task(object):
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
-    def execute(self):
+    def execute(self, driver_factory):
         """Called by task queue workers when they start to work on task."""
         pass
 

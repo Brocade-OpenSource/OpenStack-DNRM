@@ -15,24 +15,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-"""
-DNRM Supervisor resource and resource factory exceptions.
-"""
 
-from dnrm.exceptions import base
+class Singleton(type):
 
+    _instance = None
 
-class InvalidResource(base.SupervisorException):
-    message = _("Resource validation failed.")
-
-
-class InvalidResourceType(base.SupervisorException):
-    message = _('Invalid resource type name: %(type_name)s')
-
-
-class ResourceAllocated(base.SupervisorException):
-    message = _("Resource %(resource_id)s was been allocated.")
-
-
-class ResourceProcessing(base.SupervisorException):
-    message = _("Resource %(resource_id)s is processed.")
+    def __call__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super(Singleton, cls).__call__(
+                *args, **kwargs)
+        return cls._instance

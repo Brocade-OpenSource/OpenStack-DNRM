@@ -44,7 +44,7 @@ class TestDriver(driver_base.DriverBase):
         pass
 
 
-class ResourceFactoryTestCase(base.BaseTestCase):
+class DriverFactoryTestCase(base.BaseTestCase):
     """ResourceFactory test case."""
 
     def setUp(self):
@@ -54,7 +54,7 @@ class ResourceFactoryTestCase(base.BaseTestCase):
         self.get_drivers_names = self._mock(
             'dnrm.common.config.get_drivers_names', retval=['foo.bar.test'])
 
-        super(ResourceFactoryTestCase, self).setUp()
+        super(DriverFactoryTestCase, self).setUp()
 
     @property
     def factory(self):

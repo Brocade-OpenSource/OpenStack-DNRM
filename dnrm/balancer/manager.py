@@ -62,7 +62,7 @@ class SerialBalancersManager(BalancersManager):
             except Exception as e:
                 msg = _('Balancer {0} error: {1}').format(str(balancer),
                                                           str(e))
-                LOG.error(msg)
+                LOG.exception(msg)
 
 
 class DNRMBalancersManager(SerialBalancersManager):

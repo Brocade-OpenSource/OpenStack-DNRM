@@ -18,6 +18,7 @@ from oslo.config import cfg
 
 from dnrm.balancer import manager as balancer
 from dnrm.common import config
+from dnrm.common import singleton
 from dnrm import db
 from dnrm.drivers import factory as driver_factory
 from dnrm import exceptions
@@ -32,21 +33,24 @@ CONF = cfg.CONF
 
 
 class ResourceManager(object):
+    __metaclass__ = singleton.Singleton
+
     def __init__(self):
+        self.driver_factory = driver_factory.DriverFactory()
+
         self.task_queue = task_queue.TaskQueue()
         self.task_workers = []
         for _i in xrange(CONF.workers_count):
-            t = task_queue.QueuedTaskWorker(self.task_queue)
+            t = task_queue.QueuedTaskWorker(self.task_queue,
+                                            self.driver_factory)
             self.task_workers.append(t)
             t.start()
-        self.driver_factory = driver_factory.DriverFactory()
 
         self.balancer_manager = balancer.DNRMBalancersManager(self.task_queue)
         self.pools = {}
         for driver_name in config.get_drivers_names():
             new_pool = pool.Pool(driver_name)
             new_unused_set = unused_set.UnusedSet(driver_name,
-                                                  self.resource_factory,
                                                   self.driver_factory)
             conf = config.get_driver_config(driver_name)
             low_watermark = conf.get('low_watermark')
@@ -71,25 +75,27 @@ class ResourceManager(object):
         self.cleaner.stop()
 
     def add(self, context, driver_name, resource_data):
-        resource_type = self.driver_factory.get_resource_type(
-            self.driver_name)
-        resource = self.resource_factory.create(resource_type,
-                                                resources.STATE_STOPPED,
-                                                resource_data)
-        resource = db.resource_create(self.driver_name, resource)
+        driver = self.driver_factory.get(driver_name)
+        driver.validate_resource(resource_data)
+        resource = driver.prepare_resource(resources.STATE_STARTED,
+                                           resource_data)
+        resource = db.resource_create(driver_name, resource)
         return resource
 
     def delete(self, context, resource_id):
         resource = db.resource_get_by_id(resource_id)
+        if resource['processing']:
+            raise exceptions.ResourceProcessing(resource_id=resource_id)
         if resource['allocated']:
             raise exceptions.ResourceAllocated(resource_id=resource_id)
-
         resource = db.resource_update(resource_id, {'processing': True})
         task = tasks.DeleteTask(resource)
         self.task_queue.push(task)
 
     def allocate(self, context, resource_id):
         resource = db.resource_get_by_id(resource_id)
+        if resource['processing']:
+            raise exceptions.ResourceProcessing(resource_id=resource_id)
         if resource['allocated']:
             raise exceptions.ResourceAllocated(resource_id=resource_id)
         self.pools[resource['type']]['pool'].pop_resource(resource_id)
@@ -98,6 +104,9 @@ class ResourceManager(object):
         return resource
 
     def deallocate(self, context, resource_id):
+        resource = db.resource_get_by_id(resource_id)
+        if resource['processing']:
+            raise exceptions.ResourceProcessing(resource_id=resource_id)
         resource = db.resource_update(resource_id, {'allocated': False,
                                                     'processing': True})
         task = tasks.WipeTask(resource)
@@ -109,5 +118,6 @@ class ResourceManager(object):
     def get(self, context, resource_id):
         return db.resource_get_by_id(resource_id)
 
-    def schema(self, context, resource_type):
-        return self.resource_factory.get_class(resource_type).schema
+    def schema(self, context, driver_name):
+        driver = self.driver_factory.get(driver_name)
+        return driver.schema()

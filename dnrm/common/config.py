@@ -49,8 +49,8 @@ CONF.register_opts(core_opts)
 
 drivers_opts = [
     cfg.DictOpt('dnrm.drivers.vyatta.vrouter_driver.'
-                'VyattaVRouterDriver', default={'low_watermark': 10,
-                                                'high_watermark': 20}),
+                'VyattaVRouterDriver', default={'low_watermark': 2,
+                                                'high_watermark': 5}),
 ]
 CONF.register_opts(drivers_opts, 'DRIVERS')
 

@@ -13,39 +13,44 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
 from dnrm import db
+from dnrm.resources import base
 
 
 class UnusedSet(object):
-    def __init__(self, driver_name, resource_factory, driver_factory):
+    def __init__(self, driver_name, driver_factory):
         self.driver_name = driver_name
-        self.resource_factory = resource_factory
         self.driver_factory = driver_factory
 
-    def get(self, status, count=None):
-        resources = self.list(status, count)
+    def get(self, state, count=None):
+        resources = self.list(state, count)
         for resource in resources:
             res = db.resource_update(resource['id'], {'processing': True})
             resource.update(res)
-        if len(resources) < (count or 0):
+        if len(resources) < (count or 0) and state == base.STATE_STARTED:
             try:
                 for _i in xrange(count):
-                    resource_type = self.driver_factory.get_resource_type(
-                        self.driver_name)
-                    res = self.resource_factory.create(resource_type, status)
-                    res = db.resource_create(self.driver_name, res)
-                    resources.append(res)
+                    driver = self.driver_factory.get(self.driver_name)
+                    resource = driver.prepare_resource(state)
+                    resource = db.resource_create(self.driver_name, resource)
+                    resources.append(resource)
             except NotImplementedError:
                 pass
+        return resources
 
-    def list(self, status, count=None):
+    def list(self, state, count=None):
         filter_opts = {'filters': {'type': self.driver_name, 'pool': None,
                                    'allocated': False, 'processing': False,
-                                   'deleted': False, 'status': status}}
+                                   'deleted': False, 'state': state}}
         if count is not None:
             filter_opts['limit'] = count
         resources = db.resource_find(filter_opts)
         if not resources and count is None:
             return []
         return resources
+
+    def count(self, state, processing=False):
+        filter_opts = {'filters': {'type': self.driver_name, 'pool': None,
+                                   'allocated': False, 'state': state,
+                                   'processing': processing, 'deleted': False}}
+        return db.resource_count(filter_opts)

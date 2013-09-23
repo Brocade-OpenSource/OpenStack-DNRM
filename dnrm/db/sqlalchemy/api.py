@@ -45,11 +45,22 @@ def model_query(model, session=None, **kwargs):
     return query
 
 
+##############################################################################
+# Resources
+
+
+def _resource_dict(resource):
+    resource = dict(resource)
+    data = resource.pop('data', {})
+    resource.update(data)
+    return resource
+
+
 def resource_create(resource_type, resource_data):
     resource = models.Resource(type=resource_type,
                                data=resource_data)
     resource.save()
-    return resource
+    return _resource_dict(resource)
 
 
 def _resource_get_by_id(id, session=None):
@@ -62,13 +73,13 @@ def _resource_get_by_id(id, session=None):
 
 
 def resource_get_by_id(id):
-    return _resource_get_by_id(id)
+    return _resource_dict(_resource_get_by_id(id))
 
 
 def resource_update(id, values):
     values = values.copy()
     validated_values = {}
-    for key in (models.Resource.FILTER_FIELDS):
+    for key in models.Resource.FILTER_FIELDS:
         try:
             validated_values[key] = values.pop(key)
         except KeyError:
@@ -83,7 +94,7 @@ def resource_update(id, values):
             validated_values['data'] = data
         resource.update(validated_values)
 
-    return resource
+    return _resource_dict(resource)
 
 
 def resource_delete(id):
@@ -147,14 +158,10 @@ def make_query(model, kwargs):
 
 
 def resource_find(kwargs):
-    query = make_query(
-        models.Resource,
-        kwargs)
-    return query.all()
+    query = make_query(models.Resource, kwargs)
+    return [_resource_dict(resource) for resource in query.all()]
 
 
 def resource_count(kwargs):
-    query = make_query(
-        models.Resource,
-        kwargs)
+    query = make_query(models.Resource, kwargs)
     return query.count()

@@ -14,9 +14,9 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
 import abc
 
+from dnrm import db
 from dnrm.resources import base
 from dnrm import tasks
 
@@ -30,29 +30,28 @@ class Balancer(object):
         self.low_watermark = low_watermark
         self.high_watermark = high_watermark
 
-    def get_current_pool_size(self):
-        return self._pool.count()
+    def get_resources(self, state, count=None):
+        return self._unused_set.get(state, count)
 
-    def get_stopped_resources(self, count):
-        return self._unused_set.get(base.STATE_STOPPED, count)
+    def list_resources(self, state, count=None):
+        return self._unused_set.list(state, count)
 
-    def get_started_resources(self, count=None):
-        return self._unused_set.get(base.STATE_STARTED, count)
-
-    def push_resources_into_pool(self, resources):
+    def push_resources(self, resources):
         for resource in resources:
             self._pool.push(resource)
 
-    def pop_resources_from_pool(self, n):
-        return self._pool.pop(n)
+    def pop_resources(self, count=None):
+        return self._pool.pop(count)
 
-    @abc.abstractmethod
     def start(self, resource):
-        pass
+        if resource['state'] == base.STATE_STOPPED:
+            resource.update(db.resource_update(
+                resource['id'], {'state': base.STATE_STARTED}))
 
-    @abc.abstractmethod
     def stop(self, resource):
-        pass
+        if resource['state'] == base.STATE_STARTED:
+            resource.update(db.resource_update(
+                resource['id'], {'state': base.STATE_STOPPED}))
 
     @abc.abstractmethod
     def balance(self):
@@ -70,55 +69,52 @@ class TaskBasedBalancer(Balancer):
         self._queue = queue
 
     def start(self, resource):
+        super(TaskBasedBalancer, self).start(resource)
         task = tasks.StartTask(resource)
         self._queue.push(task)
 
     def stop(self, resource):
+        super(TaskBasedBalancer, self).stop(resource)
         task = tasks.StopTask(resource)
         self._queue.push(task)
 
 
 class SimpleBalancer(Balancer):
     def eliminate_deficit(self, deficit):
-        unused_resources = self.get_stopped_resources(deficit)
-        for resource in unused_resources:
+        free_space = deficit
+        resources = self.get_resources(base.STATE_STOPPED, free_space)
+        free_space -= len(resources)
+        if free_space > 0:
+            resources += self.get_resources(base.STATE_STARTED, free_space)
+        for resource in resources:
             self.start(resource)
+        resources = self.list_resources(base.STATE_STARTED, deficit)
+        self.push_resources(resources)
 
     def eliminate_overflow(self, overflow):
-        resources = self.pop_resources_from_pool(overflow)
+        resources = self.pop_resources(overflow)
         for resource in resources:
             self.stop(resource)
 
-    def stop_unused_started_resources(self):
-        started = self.get_started_resources()
+    def stop_unused(self):
+        started = self.list_resources(base.STATE_STARTED)
         for resource in started:
             self.stop(resource)
 
     def balance(self):
-        current_size = self.get_current_pool_size()
-
-        # Push started resources into pool
-        free_space = self.high_watermark - current_size
-        if free_space > 0:
-            started = self.get_started_resources(free_space)
-            self.push_resources_into_pool(started)
-
-        current_size = self.get_current_pool_size()
-
         # Eliminate deficit.
-        deficit = self.low_watermark - current_size
+        deficit = (self.low_watermark - self._pool.count() -
+                   self._unused_set.count(base.STATE_STARTED, True))
         if deficit > 0:
             self.eliminate_deficit(deficit)
 
-        current_size = self.get_current_pool_size()
-
         # Eliminate overflow
-        overflow = current_size - self.high_watermark
+        overflow = self._pool.count() - self.high_watermark
         if overflow > 0:
             self.eliminate_overflow(overflow)
 
         # Stop unused started resources
-        self.stop_unused_started_resources()
+        self.stop_unused()
 
 
 class DNRMBalancer(SimpleBalancer, TaskBasedBalancer):

@@ -25,13 +25,14 @@ CONF = cfg.CONF
 class ConfigTestCase(base.BaseTestCase):
     def setUp(self):
         super(ConfigTestCase, self).setUp()
-        self.opts = {'dnrm.drivers.vyatta.vrouter_driver.'
-                     'VyattaVRouterDriver': {'low_watermark': 10,
-                                             'high_watermark': 20},
-                     'dnrm.drivers.fake.FakeDriver': {'low_watermark': 10,
-                                                      'high_watermark': 20}}
-        opts = [cfg.DictOpt(k, default=v) for k, v in self.opts.items()]
-        CONF.register_opts(opts, 'DRIVERS')
+        vyatta = ('dnrm.drivers.vyatta.vrouter_driver.'
+                  'VyattaVRouterDriver', {'low_watermark': 10,
+                                          'high_watermark': 20})
+        fake = ('dnrm.drivers.fake.FakeDriver', {'low_watermark': 10,
+                                                 'high_watermark': 20})
+        self.opts = dict([vyatta, fake])
+        CONF.set_override(vyatta[0], vyatta[1], 'DRIVERS')
+        CONF.register_opt(cfg.DictOpt(fake[0], default=fake[1]), 'DRIVERS')
 
     def test_drivers_names(self):
         names = config.get_drivers_names()

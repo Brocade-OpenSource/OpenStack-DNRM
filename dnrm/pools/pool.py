@@ -25,9 +25,9 @@ class Pool(object):
     def name(self):
         return self._name
 
-    def push(self, resource_uuid):
-        db.resource_update(resource_uuid, {'pool': self.name,
-                                           'processing': False})
+    def push(self, resource_id):
+        db.resource_update(resource_id, {'pool': self.name,
+                                         'processing': False})
 
     def pop(self, count=1, processing=True):
         search_opts = {'filters': {'pool': self.name}}
@@ -35,14 +35,14 @@ class Pool(object):
             search_opts['limit'] = count
         resources = db.resource_find(search_opts)
         for resource in resources:
-            resource.update(db.resource_update(resource['uuid'],
+            resource.update(db.resource_update(resource['id'],
                                                {'pool': None,
                                                 'processing': processing}))
         return resources
 
-    def pop_resource(self, resource_uuid):
-        resource = (db.resource_update(resource_uuid, {'pool': None,
-                                                       'processing': True}))
+    def pop_resource(self, resource_id):
+        resource = (db.resource_update(resource_id, {'pool': None,
+                                                     'processing': True}))
         return resource
 
     def list(self):
