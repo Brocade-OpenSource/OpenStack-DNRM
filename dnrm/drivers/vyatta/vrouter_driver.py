@@ -83,8 +83,6 @@ class InstanceBootTimeout(exceptions.DriverException):
 
 
 class VyattaVRouterDriver(base.DriverBase):
-    resource_type = 'nova_vm'
-
     def __init__(self):
         self.management_net = netaddr.IPNetwork(
             cfg.CONF.VROUTER.management_network_cidr)
@@ -102,9 +100,6 @@ class VyattaVRouterDriver(base.DriverBase):
         self.api_port = cfg.CONF.VROUTER.api_port
 
     def init(self, resource):
-        if resource.state != resources.STATE_STOPPED:
-            return
-
         name = 'vrouter_{0}'.format(os.urandom(6).encode('hex'))
         client = self._nova_client()
         server = client.servers.create(name, self.image_id, self.flavor,
@@ -137,9 +132,9 @@ class VyattaVRouterDriver(base.DriverBase):
         if len(fixed_ips) != 1:
             raise InvalidInstanceConfiguration(
                 cause=_("number of fixed ips = %s") % len(fixed_ips))
-        address = fixed_ips[0].ip_address
-        resource.instance_id = server.id
-        resource.address = address
+        address = fixed_ips[0]['ip_address']
+        resource['instance_id'] = server.id
+        resource['address'] = address
 
         # Now wait for server to boot
         def server_boot():
@@ -148,25 +143,57 @@ class VyattaVRouterDriver(base.DriverBase):
         self._wait(server_boot, timeout=self.vrouter_timeout)
 
     def stop(self, resource):
-        if resource.state != resources.STATE_STARTED:
+        if resource['state'] != resources.STATE_STARTED:
             return
         client = self._nova_client()
-        client.servers.delete(resource.instance_id)
+        client.servers.delete(resource['instance_id'])
+        del resource['instance_id']
+        del resource['address']
 
     def wipe(self, resource):
         # TODO(anfrolov): Implement when wipe will be implemented in proxy
         pass
 
     def check(self, resource):
-        if resource.state != resources.STATE_STARTED:
+        if resource['state'] != resources.STATE_STARTED:
             return
         try:
-            address = resource.address
+            address = resource['address']
             self._validate_address(address)
         except Exception as ex:
             raise exceptions.ResourceCheckFailed(error=str(ex))
         if not self._check_instance(address):
             raise exceptions.ResourceCheckFailed(error='failed to connect')
+
+    def validate_resource(self, resource):
+        if resource['state'] == resources.STATE_STARTED:
+            # Check address
+            self._validate_address(resource['address'])
+
+            # Check instance_id
+            if 'instance_id' not in resource:
+                raise exceptions.InvalidResource(
+                    _('Vyatta vRouter instance UUID (instance_id) missing.'))
+
+    def schema(self):
+        return {
+            'title': 'Vyatta vRouter resource object JSON schema.',
+            'type': 'object',
+            'properties': {
+                'address': {'type': 'ip-address'},
+                'instance_id': {
+                    'type': 'string',
+                    'minLength': 36,
+                    'maxLength': 36
+                },
+            },
+        }
+
+    def prepare_resource(self, state):
+        if state == base.STATE_STOPPED:
+            return dict(state=base.STATE_STOPPED)
+        else:
+            raise NotImplementedError()
 
     def _nova_client(self):
         # TODO(anfrolov): cache keystone token

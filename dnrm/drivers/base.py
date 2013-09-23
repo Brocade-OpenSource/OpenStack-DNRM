@@ -58,3 +58,23 @@ class DriverBase(object):
         This function may issue long-runing operations.
         """
         pass
+
+    @abc.abstractmethod
+    def validate_resource(self, resource):
+        """
+        Validates resource and throws exception on validation failure, or do
+        nothing if resource is ok.
+        """
+        pass
+
+    @abc.abstractmethod
+    def schema(self):
+        """
+        Returns JSON schema for resources that are managed by this driver.
+        """
+        pass
+
+    @abc.abstractmethod
+    def prepare_resource(self, state):
+        """Creates clean resource in requested state."""
+        pass

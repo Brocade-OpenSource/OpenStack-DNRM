@@ -26,19 +26,9 @@ from eventlet import greenthread
 from eventlet import queue
 
 
-class TestResource(resource_base.Resource):
-    @classmethod
-    def validate(cls, resource_data):
-        pass
-
-    @classmethod
-    def schema(cls):
-        return {}
-
-
 class TestTask(tasks.Task):
     def execute(self):
-        return TestResource({'foo': 'bar'})
+        return dict(state=resource_base.STATE_STOPPED, foo='bar')
 
 
 class MockedEventletTestCase(base.BaseTestCase):
@@ -47,7 +37,9 @@ class MockedEventletTestCase(base.BaseTestCase):
         self.light_queue_cls = self._mock('eventlet.queue.LightQueue')
         self.light_queue = self.light_queue_cls.return_value
         self.task_queue = task_queue.TaskQueue()
-        self.worker = task_queue.QueuedTaskWorker(self.task_queue)
+        self.driver_factory = mock.MagicMock()
+        self.worker = task_queue.QueuedTaskWorker(self.task_queue,
+                                                  self.driver_factory)
         super(MockedEventletTestCase, self).setUp()
 
     def _mock(self, function, retval=None, side_effect=None):
@@ -88,7 +80,9 @@ class QueuedTaskWorkerTestCase(base.BaseTestCase):
         self.resource_update = self._mock('dnrm.db.api.resource_update')
         self.config(task_queue_timeout=1)
         self.task_queue = task_queue.TaskQueue()
-        self.worker = task_queue.QueuedTaskWorker(self.task_queue)
+        self.driver_factory = mock.MagicMock()
+        self.worker = task_queue.QueuedTaskWorker(self.task_queue,
+                                                  self.driver_factory)
         super(QueuedTaskWorkerTestCase, self).setUp()
 
     def _mock(self, function, retval=None, side_effect=None):
@@ -103,13 +97,13 @@ class QueuedTaskWorkerTestCase(base.BaseTestCase):
 
     def test_start(self):
         task = mock.MagicMock()
+        resource = {'id': 'fake-id'}
+        task.execute.return_value = resource
         self.task_queue.push(task)
         self.worker.start()
         greenthread.sleep()
-        task.execute.assert_called_once()
-        resource = task.execute.return_value
-        self.resource_update.assert_called_once_with(
-            resource.id, resource.to_dict.return_value)
+        task.execute.assert_called_once(self.driver_factory)
+        self.resource_update.assert_called_once_with('fake-id', resource)
 
     def test_execute_exception(self):
         task = mock.MagicMock()
@@ -117,7 +111,7 @@ class QueuedTaskWorkerTestCase(base.BaseTestCase):
         self.task_queue.push(task)
         self.worker.start()
         greenthread.sleep()
-        task.execute.assert_called_once()
+        task.execute.assert_called_once(self.driver_factory)
 
     def test_stop(self):
         self.worker.start()

@@ -53,8 +53,9 @@ class QueuedTaskWorker(Worker):
     Worker that takes tasks from task queue and executes them in loop.
     """
 
-    def __init__(self, queue):
+    def __init__(self, queue, driver_factory):
         self._queue = queue
+        self._driver_factory = driver_factory
         self._running = False
         self._timeout = CONF.task_queue_timeout
 
@@ -66,9 +67,9 @@ class QueuedTaskWorker(Worker):
             if task is None:
                 continue
             try:
-                resource = task.execute()
-                resource.processing = False
-                db_api.resource_update(resource.id, resource.to_dict())
+                resource = task.execute(self._driver_factory)
+                resource['processing'] = False
+                db_api.resource_update(resource['id'], resource)
             except Exception:
                 LOG.exception(_('Exception executing task %s.') % repr(task))
 

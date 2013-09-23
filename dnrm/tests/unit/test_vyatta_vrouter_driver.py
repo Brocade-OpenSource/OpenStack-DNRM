@@ -21,7 +21,6 @@ import socket
 from dnrm.drivers.vyatta.vrouter_driver import VyattaVRouterDriver
 from dnrm import exceptions
 from dnrm.resources import base as resources
-from dnrm.resources.virtual_resource import VirtualResource
 from dnrm.tests import base
 from oslo.config import cfg
 
@@ -30,8 +29,12 @@ CONF = cfg.CONF
 
 def make_resource(instance_id='inst-id', address='10.0.0.1',
                   state=resources.STATE_STARTED):
-    return VirtualResource({'state': state, 'instance_id': instance_id,
-                            'address': address})
+    res = {'state': state}
+    if address is not None:
+        res['address'] = address
+    if instance_id is not None:
+        res['instance_id'] = instance_id
+    return res
 
 
 class VrouterDriverTestCase(base.BaseTestCase):
@@ -86,12 +89,11 @@ class VrouterDriverTestCase(base.BaseTestCase):
         self.novaclient.servers.get.return_value = server
 
         interface = mock.MagicMock()
-        fixed_ip = mock.MagicMock()
-        fixed_ip.ip_address = '10.0.0.1'
+        fixed_ip = dict(ip_address='10.0.0.1')
         interface.fixed_ips = [fixed_ip] * num_ips
         server.interface_list.return_value = [interface] * num_ifaces
 
-        with self._check_check_instance(fixed_ip.ip_address):
+        with self._check_check_instance(fixed_ip['ip_address']):
             yield
 
         self.novaclient.servers.create.assert_called_once_with(
@@ -119,7 +121,7 @@ class VrouterDriverTestCase(base.BaseTestCase):
 
     def test_check(self):
         resource = make_resource(address='10.0.0.1')
-        with self._check_check_instance(resource.address):
+        with self._check_check_instance(resource['address']):
             self.driver.check(resource)
 
     def test_check_fail_invalid_ip1(self):
@@ -128,28 +130,27 @@ class VrouterDriverTestCase(base.BaseTestCase):
             exceptions.ResourceCheckFailed, self.driver.check, resource)
 
     def test_check_fail_invalid_ip2(self):
-        resource = make_resource()
-        resource.address = 'chubaca'
+        resource = make_resource(address='chubaca')
         self.assertRaises(
             exceptions.ResourceCheckFailed, self.driver.check, resource)
 
     def test_check_fail_not_connected(self):
         resource = make_resource()
-        with self._check_check_instance(resource.address):
+        with self._check_check_instance(resource['address']):
             self.httpconn_cls.return_value = None
             self.assertRaises(
                 exceptions.ResourceCheckFailed, self.driver.check, resource)
 
     def test_check_fail_socket_timeout(self):
         resource = make_resource()
-        with self._check_check_instance(resource.address):
+        with self._check_check_instance(resource['address']):
             self.httpconn.getresponse.side_effect = socket.timeout()
             self.assertRaises(
                 exceptions.ResourceCheckFailed, self.driver.check, resource)
 
     def test_check_fail_socket_error(self):
         resource = make_resource()
-        with self._check_check_instance(resource.address):
+        with self._check_check_instance(resource['address']):
             self.httpconn.getresponse.side_effect = socket.error()
             self.assertRaises(
                 exceptions.ResourceCheckFailed, self.driver.check, resource)
@@ -161,44 +162,43 @@ class VrouterDriverTestCase(base.BaseTestCase):
         self.driver.check(resource)
 
     def test_init(self):
-        resource = VirtualResource()
+        resource = make_resource(state=resources.STATE_STOPPED, address=None,
+                                 instance_id=None)
         with self._check_init():
             self.driver.init(resource)
 
-    def test_init_already_started(self):
-        resource = make_resource()
-        self.novaclient.servers.create.side_effect = AssertionError(
-            "novaclient.servers.create shouldn't be called on started "
-            "resource")
-        self.driver.init(resource)
-
     def test_init_instance_error_state(self):
-        resource = VirtualResource()
+        resource = make_resource(state=resources.STATE_STOPPED, address=None,
+                                 instance_id=None)
         with self._check_init(instance_state='ERROR'):
             self.assertRaises(
                 exceptions.DriverException, self.driver.init, resource)
 
     def test_init_initial_get_raises(self):
-        resource = VirtualResource()
+        resource = make_resource(state=resources.STATE_STOPPED, address=None,
+                                 instance_id=None)
         with self._check_init():
             server = self.novaclient.servers.create.return_value
             self.novaclient.servers.get.side_effect = [RuntimeError(), server]
             self.driver.init(resource)
 
     def test_init_too_much_interfaces(self):
-        resource = VirtualResource()
+        resource = make_resource(state=resources.STATE_STOPPED, address=None,
+                                 instance_id=None)
         with self._check_init(num_ifaces=2):
             self.assertRaises(
                 exceptions.DriverException, self.driver.init, resource)
 
     def test_init_too_much_ips(self):
-        resource = VirtualResource()
+        resource = make_resource(state=resources.STATE_STOPPED, address=None,
+                                 instance_id=None)
         with self._check_init(num_ips=2):
             self.assertRaises(
                 exceptions.DriverException, self.driver.init, resource)
 
     def test_init_two_get_instance_calls(self):
-        resource = VirtualResource()
+        resource = make_resource(state=resources.STATE_STOPPED, address=None,
+                                 instance_id=None)
         with self._check_init():
             server = self.novaclient.servers.create.return_value
             spawning_server = mock.MagicMock()
@@ -209,7 +209,8 @@ class VrouterDriverTestCase(base.BaseTestCase):
             self.driver.init(resource)
 
     def test_init_nova_timeout(self):
-        resource = VirtualResource()
+        resource = make_resource(state=resources.STATE_STOPPED, address=None,
+                                 instance_id=None)
         with self._check_init(instance_state='BUILD'):
             self.time.side_effect = [1, 1 << 31]
             self.assertRaises(

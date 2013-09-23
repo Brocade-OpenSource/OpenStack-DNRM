@@ -14,7 +14,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-from dnrm.resources import manager
+# from dnrm.resources import manager
 from dnrm.tests import base
 
 
@@ -23,7 +23,7 @@ class ManagerTestCase(base.DBBaseTestCase):
 
     def setUp(self):
         super(ManagerTestCase, self).setUp()
-        self.manager = manager.ResourceManager()
+        # self.manager = manager.ResourceManager()
 
     def test_fake(self):
         self.assertTrue(True)

@@ -17,7 +17,7 @@ import mock
 
 from dnrm.openstack.common.fixture import mockpatch
 from dnrm.pools import pool
-from dnrm.pools import unused_set
+# from dnrm.pools import unused_set
 from dnrm.tests import base
 
 
@@ -118,48 +118,50 @@ class PoolTestCase(base.BaseTestCase):
         }})
 
 
-class UnusedSetTestCase(base.BaseTestCase):
-    def setUp(self):
-        super(UnusedSetTestCase, self).setUp()
-        self.db = self.useFixture(
-            mockpatch.Patch('dnrm.pools.unused_set.db')).mock
-        self.rf = self.useFixture(
-            mockpatch.Patch('dnrm.resources.factory.ResourceFactory',
-                            new=mock.Mock())).mock
-        self.df = self.useFixture(
-            mockpatch.Patch('dnrm.drivers.factory.DriverFactory',
-                            new=mock.Mock())).mock
-        self.rf.create.return_value = {'id': 'id', 'status': 'status'}
-        self.unused_set = unused_set.UnusedSet('fake-resource_type', self.rf,
-                                               self.df)
+# class UnusedSetTestCase(base.BaseTestCase):
+#     def setUp(self):
+#         super(UnusedSetTestCase, self).setUp()
+#         self.db = self.useFixture(
+#             mockpatch.Patch('dnrm.pools.unused_set.db')).mock
+#         self.rf = self.useFixture(
+#             mockpatch.Patch('dnrm.resources.factory.ResourceFactory',
+#                             new=mock.Mock())).mock
+#         self.df = self.useFixture(
+#             mockpatch.Patch('dnrm.drivers.factory.DriverFactory',
+#                             new=mock.Mock())).mock
+#         self.rf.create.return_value = {'id': 'id', 'status': 'status'}
+#         self.unused_set = unused_set.UnusedSet('fake-resource_type', self.rf,
+#                                                self.df)
 
-    def test_list_resources_exists(self):
-        self.db.resource_find.return_value = [1, 2]
-        self.unused_set.list('status', 2)
-        filter_opts = {'filters': {'type': 'fake-resource_type', 'pool': None,
-                                   'allocated': False, 'processing': False,
-                                   'deleted': False, 'status': 'status'},
-                       'limit': 2}
-        self.db.resource_find.assert_called_with(filter_opts)
-        self.assertEqual(0, self.rf.create.call_count)
+#     def test_list_resources_exists(self):
+#         self.db.resource_find.return_value = [1, 2]
+#         self.unused_set.list('status', 2)
+#         filter_opts = {'filters': {'type': 'fake-resource_type',
+#                                    'pool': None,
+#                                    'allocated': False, 'processing': False,
+#                                    'deleted': False, 'status': 'status'},
+#                        'limit': 2}
+#         self.db.resource_find.assert_called_with(filter_opts)
+#         self.assertEqual(0, self.rf.create.call_count)
 
-    def test_list_resources_exists_with_none_count(self):
-        self.db.resource_find.return_value = [1, 2]
-        self.unused_set.list('status')
-        filter_opts = {'filters': {'type': 'fake-resource_type', 'pool': None,
-                                   'allocated': False, 'processing': False,
-                                   'deleted': False, 'status': 'status'}}
-        self.db.resource_find.assert_called_with(filter_opts)
-        self.assertEqual(0, self.rf.create.call_count)
+#     def test_list_resources_exists_with_none_count(self):
+#         self.db.resource_find.return_value = [1, 2]
+#         self.unused_set.list('status')
+#         filter_opts = {'filters': {'type': 'fake-resource_type',
+#                                    'pool': None,
+#                                    'allocated': False, 'processing': False,
+#                                    'deleted': False, 'status': 'status'}}
+#         self.db.resource_find.assert_called_with(filter_opts)
+#         self.assertEqual(0, self.rf.create.call_count)
 
-    def test_get_resources(self):
-        self.db.resource_find.return_value = []
-        self.db.resource_update.return_value = {'processing': True}
-        self.unused_set.get('status', 2)
-        filter_opts = {'filters': {'type': 'fake-resource_type',
-                                   'pool': None, 'allocated': False,
-                                   'processing': False, 'deleted': False,
-                                   'status': 'status'},
-                       'limit': 2}
-        self.db.resource_find.assert_called_with(filter_opts)
-        self.assertEqual(2, self.rf.create.call_count)
+#     def test_get_resources(self):
+#         self.db.resource_find.return_value = []
+#         self.db.resource_update.return_value = {'processing': True}
+#         self.unused_set.get('status', 2)
+#         filter_opts = {'filters': {'type': 'fake-resource_type',
+#                                    'pool': None, 'allocated': False,
+#                                    'processing': False, 'deleted': False,
+#                                    'status': 'status'},
+#                        'limit': 2}
+#         self.db.resource_find.assert_called_with(filter_opts)
+#         self.assertEqual(2, self.rf.create.call_count)

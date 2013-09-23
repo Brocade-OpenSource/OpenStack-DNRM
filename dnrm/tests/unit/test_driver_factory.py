@@ -22,8 +22,6 @@ from dnrm.tests import base
 
 
 class TestDriver(driver_base.DriverBase):
-    resource_type = 'test'
-
     def init(self, resource):
         pass
 
@@ -36,6 +34,15 @@ class TestDriver(driver_base.DriverBase):
     def check(self, resource):
         pass
 
+    def validate_resource(self, resource):
+        pass
+
+    def schema(self):
+        pass
+
+    def prepare_resource(self, state):
+        pass
+
 
 class ResourceFactoryTestCase(base.BaseTestCase):
     """ResourceFactory test case."""
@@ -44,7 +51,7 @@ class ResourceFactoryTestCase(base.BaseTestCase):
         self.import_class = self._mock(
             'dnrm.openstack.common.importutils.import_class',
             retval=TestDriver)
-        self.get_resource_types = self._mock(
+        self.get_drivers_names = self._mock(
             'dnrm.common.config.get_drivers_names', retval=['foo.bar.test'])
 
         super(ResourceFactoryTestCase, self).setUp()
@@ -66,11 +73,5 @@ class ResourceFactoryTestCase(base.BaseTestCase):
     def test_get(self):
         self.assertTrue(isinstance(self.factory.get('foo.bar.test'),
                                    TestDriver))
-        self.get_resource_types.assert_called_once_with()
-        self.import_class.assert_called_once_with('foo.bar.test')
-
-    def test_get_resource_type(self):
-        self.assertEquals(self.factory.get_resource_type('foo.bar.test'),
-                          'test')
-        self.get_resource_types.assert_called_once_with()
+        self.get_drivers_names.assert_called_once_with()
         self.import_class.assert_called_once_with('foo.bar.test')

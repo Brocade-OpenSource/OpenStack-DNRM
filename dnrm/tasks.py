@@ -20,8 +20,7 @@ Module contains task classes used by balancer.
 
 import abc
 
-from dnrm.drivers import factory
-from dnrm.resources import base as resources
+from dnrm.resources import base
 
 
 class Task(object):
@@ -41,12 +40,11 @@ class StartTask(Task):
     def __init__(self, resource):
         self._resource = resource
 
-    def execute(self):
+    def execute(self, driver_factory):
         resource = self._resource
-        driver_factory = factory.DriverFactory()
-        driver = driver_factory.get(resource.resource_type)
+        driver = driver_factory.get(resource['type'])
         driver.init(resource)
-        resource.state = resources.STATE_STARTED
+        resource['state'] = base.STATE_STARTED
         return resource
 
 
@@ -56,12 +54,15 @@ class StopTask(Task):
     def __init__(self, resource):
         self._resource = resource
 
-    def execute(self):
+    def execute(self, driver_factory):
         resource = self._resource
-        driver_factory = factory.DriverFactory()
-        driver = driver_factory.get(resource.resource_type)
+        driver = driver_factory.get(resource['type'])
         driver.stop(resource)
-        resource.state = resources.STATE_STOPPED
+        resource['state'] = base.STATE_STOPPED
+        if 'address' in resource:
+            del resource['address']
+        if 'instance_id' in resource:
+            del resource['instance_id']
         return resource
 
 
@@ -71,10 +72,9 @@ class WipeTask(Task):
     def __init__(self, resource):
         self._resource = resource
 
-    def execute(self):
+    def execute(self, driver_factory):
         resource = self._resource
-        driver_factory = factory.DriverFactory()
-        driver = driver_factory.get(resource.resource_type)
+        driver = driver_factory.get(resource['type'])
         driver.wipe(resource)
         return resource
 
@@ -85,10 +85,9 @@ class DeleteTask(Task):
     def __init__(self, resource):
         self._resource = resource
 
-    def execute(self):
+    def execute(self, driver_factory):
         resource = self._resource
-        driver_factory = factory.DriverFactory()
-        driver = driver_factory.get(resource.resource_type)
+        driver = driver_factory.get(resource['type'])
         driver.stop(resource)
-        resource.deleted = True
+        resource['deleted'] = True
         return resource

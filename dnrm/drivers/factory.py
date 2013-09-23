@@ -53,7 +53,3 @@ class DriverFactory(object):
             return driver
         else:
             raise exceptions.InvalidDriverName(driver_name=driver_name)
-
-    def get_resource_type(self, driver_name):
-        driver = self.get(driver_name)
-        return driver.resource_type

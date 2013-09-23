@@ -22,12 +22,6 @@ from dnrm import tasks
 from dnrm.tests import base
 
 
-class TestResource(resources.Resource):
-    def __init__(self):
-        super(TestResource, self).__init__()
-        self.resource_type = 'foobar'
-
-
 class TasksTestCase(base.BaseTestCase):
     def setUp(self):
         self.config(task_queue_timeout=1)
@@ -46,31 +40,34 @@ class TasksTestCase(base.BaseTestCase):
             mock_object.side_effect = side_effect
         return mock_object
 
+    def _make_resource(self):
+        return dict(state=resources.STATE_STOPPED, type='foobar')
+
     def test_start_task(self):
-        resource = TestResource()
+        resource = self._make_resource()
         task = tasks.StartTask(resource)
-        self.assertEquals(resource, task.execute())
+        self.assertEquals(resource, task.execute(self.factory))
         self.factory.get.assert_called_once_with('foobar')
         self.driver.init.assert_called_once_with(resource)
 
     def test_stop_task(self):
-        resource = TestResource()
+        resource = self._make_resource()
         task = tasks.StopTask(resource)
-        self.assertEquals(resource, task.execute())
+        self.assertEquals(resource, task.execute(self.factory))
         self.factory.get.assert_called_once_with('foobar')
         self.driver.stop.assert_called_once_with(resource)
 
     def test_wipe_task(self):
-        resource = TestResource()
+        resource = self._make_resource()
         task = tasks.WipeTask(resource)
-        self.assertEquals(resource, task.execute())
+        self.assertEquals(resource, task.execute(self.factory))
         self.factory.get.assert_called_once_with('foobar')
         self.driver.wipe.assert_called_once_with(resource)
 
     def test_delete_task(self):
-        resource = TestResource()
+        resource = self._make_resource()
         task = tasks.DeleteTask(resource)
-        self.assertEquals(resource, task.execute())
-        self.assertTrue(resource.deleted)
+        self.assertEquals(resource, task.execute(self.factory))
+        self.assertTrue(resource['deleted'])
         self.factory.get.assert_called_once_with('foobar')
         self.driver.stop.assert_called_once_with(resource)

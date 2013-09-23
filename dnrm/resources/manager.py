@@ -25,7 +25,6 @@ from dnrm.pools import pool
 from dnrm.pools import unused_set
 from dnrm.resources import base as resources
 from dnrm.resources import cleaner
-from dnrm.resources import factory as resource_factory
 from dnrm import task_queue
 from dnrm import tasks
 
@@ -43,7 +42,6 @@ class ResourceManager(object):
         self.driver_factory = driver_factory.DriverFactory()
 
         self.balancer_manager = balancer.DNRMBalancersManager(self.task_queue)
-        self.resource_factory = resource_factory.ResourceFactory()
         self.pools = {}
         for driver_name in config.get_drivers_names():
             new_pool = pool.Pool(driver_name)
