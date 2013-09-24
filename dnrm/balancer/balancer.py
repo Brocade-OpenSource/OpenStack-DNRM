@@ -81,15 +81,13 @@ class TaskBasedBalancer(Balancer):
 
 class SimpleBalancer(Balancer):
     def eliminate_deficit(self, deficit):
-        free_space = deficit
-        resources = self.get_resources(base.STATE_STOPPED, free_space)
-        free_space -= len(resources)
-        if free_space > 0:
-            resources += self.get_resources(base.STATE_STARTED, free_space)
-        for resource in resources:
-            self.start(resource)
         resources = self.list_resources(base.STATE_STARTED, deficit)
         self.push_resources(resources)
+        deficit -= len(resources)
+        if deficit > 0:
+            resources = self.get_resources(base.STATE_STOPPED, deficit)
+            for resource in resources:
+                self.start(resource)
 
     def eliminate_overflow(self, overflow):
         resources = self.pop_resources(overflow)

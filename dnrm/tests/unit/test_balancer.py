@@ -130,7 +130,7 @@ class DNRMBalancerTestCase(base.BaseTestCase):
         self.unused_set.get.side_effect = [res1, res2]
         self.unused_set.list.return_value = res1
         self.balancer.eliminate_deficit(4)
-        self.assertEqual(4, self.queue.push.call_count)
+        self.assertEqual(2, self.queue.push.call_count)
         self.pool.push.assert_has_calls([mock.call(r) for r in res1])
 
     def test_eliminate_overflow(self):

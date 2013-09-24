@@ -15,7 +15,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 from dnrm import db
-from dnrm.resources import base
 
 
 class UnusedSet(object):
@@ -28,7 +27,7 @@ class UnusedSet(object):
         for resource in resources:
             res = db.resource_update(resource['id'], {'processing': True})
             resource.update(res)
-        if len(resources) < (count or 0) and state == base.STATE_STARTED:
+        if len(resources) < (count or 0):
             try:
                 for _i in xrange(count):
                     driver = self.driver_factory.get(self.driver_name)
