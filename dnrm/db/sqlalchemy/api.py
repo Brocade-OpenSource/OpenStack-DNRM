@@ -69,7 +69,7 @@ def _update_resource(resource, values):
         except KeyError:
             pass
     if values:
-        data = resource['data']
+        data = resource['data'] or {}
         data.update(values)
         validated_values['data'] = data
     resource.update(validated_values)
