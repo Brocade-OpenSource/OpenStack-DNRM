@@ -36,7 +36,7 @@ class DriverController(wsgi.Controller):
         """Return a summary list of drivers."""
         return {'drivers': config.get_drivers_names()}
 
-    def show(self, request, resource_type=None):
+    def show(self, request, resource_type):
         """Get a driver."""
         context = request.environ.get('dnrm.context', None)
         try:
