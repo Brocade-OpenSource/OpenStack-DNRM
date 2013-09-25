@@ -193,7 +193,7 @@ class VyattaVRouterDriver(base.DriverBase):
 
     def prepare_resource(self, state):
         if state == resources.STATE_STOPPED:
-            return dict(state=resources.STATE_STOPPED)
+            return dict(status=resources.STATE_STOPPED)
         else:
             raise NotImplementedError()
 
