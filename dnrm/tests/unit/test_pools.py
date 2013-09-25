@@ -126,7 +126,7 @@ class UnusedSetTestCase(base.BaseTestCase):
             mockpatch.Patch('dnrm.pools.unused_set.db')).mock
         self.dv = mock.Mock()
         self.dv.prepare_resource.return_value = {'id': 'id',
-                                                 'state': 'STARTED'}
+                                                 'status': 'STARTED'}
         df = mock.Mock()
         df.get.return_value = self.dv
         self.unused_set = unused_set.UnusedSet('fake-resource_type', df)
@@ -137,7 +137,7 @@ class UnusedSetTestCase(base.BaseTestCase):
         filter_opts = {'filters': {'type': 'fake-resource_type',
                                    'pool': None,
                                    'allocated': False, 'processing': False,
-                                   'deleted': False, 'state': 'status'},
+                                   'deleted': False, 'status': 'status'},
                        'limit': 2}
         self.db.resource_find.assert_called_with(filter_opts)
         self.assertEqual(0, self.dv.prepare_resource.call_count)
@@ -148,7 +148,7 @@ class UnusedSetTestCase(base.BaseTestCase):
         filter_opts = {'filters': {'type': 'fake-resource_type',
                                    'pool': None,
                                    'allocated': False, 'processing': False,
-                                   'deleted': False, 'state': 'status'}}
+                                   'deleted': False, 'status': 'status'}}
         self.db.resource_find.assert_called_with(filter_opts)
         self.assertEqual(0, self.dv.prepare_resource.call_count)
 
@@ -159,17 +159,17 @@ class UnusedSetTestCase(base.BaseTestCase):
         filter_opts = {'filters': {'type': 'fake-resource_type',
                                    'pool': None, 'allocated': False,
                                    'processing': False, 'deleted': False,
-                                   'state': 'STARTED'},
+                                   'status': 'STARTED'},
                        'limit': 2}
         self.db.resource_find.assert_called_with(filter_opts)
         self.assertEqual(2, self.dv.prepare_resource.call_count)
 
     def test_count(self):
         self.db.resource_count.return_value = 10
-        res = self.unused_set.count('state')
+        res = self.unused_set.count('status')
         self.db.resource_count.assert_called_with(
             {'filters': {'type': 'fake-resource_type', 'pool': None,
-                         'allocated': False, 'state': 'state',
+                         'allocated': False, 'status': 'status',
                          'processing': False, 'deleted': False}})
         self.assertEqual(1, self.db.resource_count.call_count)
         self.assertEqual(10, res)

@@ -65,14 +65,15 @@ class Resource(BASE, DNRMBase, HasId):
 
     MAX_RESOURCE_TYPE_LENGTH = 250
 
-    FILTER_FIELDS = ['type', 'state', 'pool', 'processing', 'allocated',
-                     'deleted']
+    FILTER_FIELDS = ['type', 'status', 'pool', 'processing', 'allocated',
+                     'deleted', 'description']
 
     type = sa.Column(sa.String(MAX_RESOURCE_TYPE_LENGTH), nullable=False)
-    state = sa.Column(sa.Enum(*STATES), nullable=False,
-                      default=base.STATE_STOPPED)
+    status = sa.Column(sa.Enum(*STATES), nullable=False,
+                       default=base.STATE_STOPPED)
     pool = sa.Column(sa.String(MAX_RESOURCE_TYPE_LENGTH), nullable=True)
     processing = sa.Column(sa.Boolean, nullable=False, default=False)
     allocated = sa.Column(sa.Boolean, nullable=False, default=False)
     deleted = sa.Column(sa.Boolean, nullable=False, default=False)
     data = sa.Column(types.JSON(), default={})
+    description = sa.Column(sa.String(255))

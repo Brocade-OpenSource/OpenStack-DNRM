@@ -143,7 +143,7 @@ class VyattaVRouterDriver(base.DriverBase):
         self._wait(server_boot, timeout=self.vrouter_timeout)
 
     def stop(self, resource):
-        if resource['state'] != resources.STATE_STARTED:
+        if resource['status'] != resources.STATE_STARTED:
             return
         client = self._nova_client()
         client.servers.delete(resource['instance_id'])
@@ -155,7 +155,7 @@ class VyattaVRouterDriver(base.DriverBase):
         pass
 
     def check(self, resource):
-        if resource['state'] != resources.STATE_STARTED:
+        if resource['status'] != resources.STATE_STARTED:
             return
         try:
             address = resource['address']
@@ -166,7 +166,7 @@ class VyattaVRouterDriver(base.DriverBase):
             raise exceptions.ResourceCheckFailed(error='failed to connect')
 
     def validate_resource(self, resource):
-        if resource['state'] == resources.STATE_STARTED:
+        if resource['status'] == resources.STATE_STARTED:
             # Check address
             self._validate_address(resource['address'])
 

@@ -14,7 +14,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
+import copy
 import sys
 
 import sqlalchemy as sa
@@ -51,18 +51,36 @@ def model_query(model, session=None, **kwargs):
 # Resources
 
 
-def _resource_dict(resource):
+def _resource_to_dict(resource):
     resource = dict(resource)
     data = resource.pop('data', {})
     resource.update(data)
     return resource
 
 
-def resource_create(resource_type, resource_data):
-    resource = models.Resource(type=resource_type,
-                               data=resource_data)
+def _update_resource(resource, values):
+    values = copy.deepcopy(values)
+    if 'id' in values:
+        del values['id']
+    validated_values = {}
+    for key in models.Resource.FILTER_FIELDS:
+        try:
+            validated_values[key] = values.pop(key)
+        except KeyError:
+            pass
+    if values:
+        data = resource['data']
+        data.update(values)
+        validated_values['data'] = data
+    resource.update(validated_values)
+
+
+def resource_create(resource_type, values):
+    resource = models.Resource()
+    _update_resource(resource, values)
+    resource['type'] = resource_type
     resource.save()
-    return _resource_dict(resource)
+    return _resource_to_dict(resource)
 
 
 def _resource_get_by_id(id, session=None):
@@ -75,28 +93,16 @@ def _resource_get_by_id(id, session=None):
 
 
 def resource_get_by_id(id):
-    return _resource_dict(_resource_get_by_id(id))
+    return _resource_to_dict(_resource_get_by_id(id))
 
 
 def resource_update(id, values):
-    values = values.copy()
-    validated_values = {}
-    for key in models.Resource.FILTER_FIELDS:
-        try:
-            validated_values[key] = values.pop(key)
-        except KeyError:
-            pass
-
     session = db_session.get_session()
     with session.begin():
         resource = _resource_get_by_id(id, session=session)
-        if values:
-            data = resource['data']
-            data.update(values)
-            validated_values['data'] = data
-        resource.update(validated_values)
+        _update_resource(resource, values)
 
-    return _resource_dict(resource)
+    return _resource_to_dict(resource)
 
 
 def resource_delete(id):
@@ -161,7 +167,7 @@ def make_query(model, kwargs):
 
 def resource_find(kwargs):
     query = make_query(models.Resource, kwargs)
-    return [_resource_dict(resource) for resource in query.all()]
+    return [_resource_to_dict(resource) for resource in query.all()]
 
 
 def resource_count(kwargs):

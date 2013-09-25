@@ -44,7 +44,7 @@ class StartTask(Task):
         resource = self._resource
         driver = driver_factory.get(resource['type'])
         driver.init(resource)
-        resource['state'] = base.STATE_STARTED
+        resource['status'] = base.STATE_STARTED
         return resource
 
 
@@ -58,7 +58,7 @@ class StopTask(Task):
         resource = self._resource
         driver = driver_factory.get(resource['type'])
         driver.stop(resource)
-        resource['state'] = base.STATE_STOPPED
+        resource['status'] = base.STATE_STOPPED
         if 'address' in resource:
             del resource['address']
         if 'instance_id' in resource:

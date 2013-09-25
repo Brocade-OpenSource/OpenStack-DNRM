@@ -38,20 +38,20 @@ class Balancer(object):
 
     def push_resources(self, resources):
         for resource in resources:
-            self._pool.push(resource)
+            self._pool.push(resource['id'])
 
     def pop_resources(self, count=None):
         return self._pool.pop(count)
 
     def start(self, resource):
-        if resource['state'] == base.STATE_STOPPED:
+        if resource['status'] == base.STATE_STOPPED:
             resource.update(db.resource_update(
-                resource['id'], {'state': base.STATE_STARTED}))
+                resource['id'], {'status': base.STATE_STARTED}))
 
     def stop(self, resource):
-        if resource['state'] == base.STATE_STARTED:
+        if resource['status'] == base.STATE_STARTED:
             resource.update(db.resource_update(
-                resource['id'], {'state': base.STATE_STOPPED}))
+                resource['id'], {'status': base.STATE_STOPPED}))
 
     @abc.abstractmethod
     def balance(self):

@@ -32,6 +32,7 @@ class UnusedSet(object):
                 for _i in xrange(count):
                     driver = self.driver_factory.get(self.driver_name)
                     resource = driver.prepare_resource(state)
+                    resource['processing'] = True
                     resource = db.resource_create(self.driver_name, resource)
                     resources.append(resource)
             except NotImplementedError:
@@ -41,7 +42,7 @@ class UnusedSet(object):
     def list(self, state, count=None):
         filter_opts = {'filters': {'type': self.driver_name, 'pool': None,
                                    'allocated': False, 'processing': False,
-                                   'deleted': False, 'state': state}}
+                                   'deleted': False, 'status': state}}
         if count is not None:
             filter_opts['limit'] = count
         resources = db.resource_find(filter_opts)
@@ -51,6 +52,6 @@ class UnusedSet(object):
 
     def count(self, state, processing=False):
         filter_opts = {'filters': {'type': self.driver_name, 'pool': None,
-                                   'allocated': False, 'state': state,
+                                   'allocated': False, 'status': state,
                                    'processing': processing, 'deleted': False}}
         return db.resource_count(filter_opts)

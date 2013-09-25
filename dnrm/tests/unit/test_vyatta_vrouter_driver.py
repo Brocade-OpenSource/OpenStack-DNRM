@@ -29,7 +29,7 @@ CONF = cfg.CONF
 
 def make_resource(instance_id='inst-id', address='10.0.0.1',
                   state=resources.STATE_STARTED):
-    res = {'state': state}
+    res = {'status': state}
     if address is not None:
         res['address'] = address
     if instance_id is not None:
