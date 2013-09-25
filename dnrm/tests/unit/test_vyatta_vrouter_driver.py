@@ -106,13 +106,6 @@ class VrouterDriverTestCase(base.BaseTestCase):
         self.addCleanup(patcher.stop)
         return patcher.start()
 
-    def test_resource_stop_stopped_resource(self):
-        resource = make_resource(state=resources.STATE_STOPPED)
-        self.novaclient.servers.delete.side_effect = AssertionError(
-            "novaclient.servers.delete shouldn't be called on deleted "
-            "resource")
-        self.driver.stop(resource)
-
     def test_resource_stop_resource(self):
         resource = make_resource(instance_id='inst-id')
         self.driver.stop(resource)

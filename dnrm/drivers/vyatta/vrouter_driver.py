@@ -145,8 +145,6 @@ class VyattaVRouterDriver(base.DriverBase):
         self._wait(server_boot, timeout=self.vrouter_timeout)
 
     def stop(self, resource):
-        if resource['status'] != resources.STATE_STARTED:
-            return
         client = self._nova_client()
         client.servers.delete(resource['instance_id'])
         del resource['instance_id']

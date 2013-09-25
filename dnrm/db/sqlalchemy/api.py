@@ -120,9 +120,7 @@ def filters_to_sa_condition(model, filter_fields, filter_values):
     for key in filter_fields:
         try:
             column = getattr(columns, key)
-            value = filter_values.pop(key, None)
-            if value is None:
-                continue
+            value = filter_values.pop(key)
             if type(value) == list:
                 expr = column.in_(tuple(value))
             else:
