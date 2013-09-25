@@ -114,7 +114,29 @@ class ResourceManager(object):
         self.task_queue.push(task)
 
     def list(self, context, search_opts):
-        return db.resource_find(search_opts)
+        so = {}
+        for key in ('limit', 'offset'):
+            if key in search_opts:
+                so[key] = search_opts.pop(key)
+
+        filters = {}
+
+        types = []
+        if 'driver_name' in search_opts:
+            types.append(search_opts.pop('driver_name'))
+        resource_type = search_opts.pop('resource_type', None)
+        if resource_type:
+            types += self.driver_factory.get_names(resource_type)
+        if types:
+            filters['type'] = types
+
+        if search_opts:
+            filters.update(search_opts)
+
+        if filters:
+            so['filters'] = filters
+
+        return db.resource_find(so)
 
     def get(self, context, resource_id):
         return db.resource_get_by_id(resource_id)

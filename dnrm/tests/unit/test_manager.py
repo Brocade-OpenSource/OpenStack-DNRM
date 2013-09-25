@@ -70,10 +70,10 @@ class ManagerTestCase(base.DBBaseTestCase):
         self.assertEqual(1, self.db.resource_get_by_id.call_count)
         self.assertDictEqual({'id': 'fake-resource-id'}, resource)
 
-    def test_get_list(self):
+    def test_list(self):
         self.db.resource_find.return_value = [{'id': 'fake-resource-id'}]
         resources = self.manager.list(self.context, {'id': 'fake-resource-id'})
         self.db.resource_find.assert_called_once_with(
-            {'id': 'fake-resource-id'})
+            {'filters': {'id': 'fake-resource-id'}})
         self.assertEqual(1, self.db.resource_find.call_count)
         self.assertListEqual([{'id': 'fake-resource-id'}], resources)

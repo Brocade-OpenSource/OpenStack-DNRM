@@ -18,10 +18,13 @@ import mock
 
 from dnrm.drivers import base as driver_base
 from dnrm.drivers import factory
+from dnrm.openstack.common.fixture import mockpatch
 from dnrm.tests import base
 
 
-class TestDriver(driver_base.DriverBase):
+class TestDriver1(driver_base.DriverBase):
+    resource_type = 'com.router.test1'
+
     def init(self, resource):
         pass
 
@@ -44,34 +47,42 @@ class TestDriver(driver_base.DriverBase):
         pass
 
 
+class TestDriver2(TestDriver1):
+    resource_type = 'com.router.test2'
+
+
 class DriverFactoryTestCase(base.BaseTestCase):
     """ResourceFactory test case."""
 
     def setUp(self):
-        self.import_class = self._mock(
-            'dnrm.openstack.common.importutils.import_class',
-            retval=TestDriver)
-        self.get_drivers_names = self._mock(
-            'dnrm.common.config.get_drivers_names', retval=['foo.bar.test'])
-
         super(DriverFactoryTestCase, self).setUp()
-
-    @property
-    def factory(self):
-        return factory.DriverFactory()
-
-    def _mock(self, function, retval=None, side_effect=None):
-        patcher = mock.patch(function)
-        self.addCleanup(patcher.stop)
-        mock_object = patcher.start()
-        if retval is not None:
-            mock_object.return_value = retval
-        if side_effect is not None:
-            mock_object.side_effect = side_effect
-        return mock_object
+        self.import_class = self.useFixture(mockpatch.Patch(
+            'dnrm.openstack.common.importutils.import_class',
+            side_effect=[TestDriver1, TestDriver2])).mock
+        self.get_drivers_names = self.useFixture(mockpatch.Patch(
+            'dnrm.common.config.get_drivers_names',
+            return_value=['foo.bar.test1', 'foo.bar.test2'])).mock
+        self.factory = factory.DriverFactory()
 
     def test_get(self):
-        self.assertTrue(isinstance(self.factory.get('foo.bar.test'),
-                                   TestDriver))
+        self.assertIsInstance(self.factory.get('foo.bar.test1'), TestDriver1)
         self.get_drivers_names.assert_called_once_with()
-        self.import_class.assert_called_once_with('foo.bar.test')
+        self.import_class.assert_has_calls([mock.call('foo.bar.test1'),
+                                            mock.call('foo.bar.test2')])
+
+    def test_get_names_all(self):
+        drivers = self.factory.get_names('com.router')
+        self.assertEqual(2, len(drivers))
+
+    def test_get_names_one(self):
+        drivers = self.factory.get_names('com.router.test1')
+        self.assertEqual(1, len(drivers))
+        self.assertEqual(drivers[0], 'foo.bar.test1')
+
+        drivers = self.factory.get_names('com.router.test2')
+        self.assertEqual(1, len(drivers))
+        self.assertEqual(drivers[0], 'foo.bar.test2')
+
+    def test_get_names_null(self):
+        drivers = self.factory.get_names('com.router.test3')
+        self.assertEqual(0, len(drivers))

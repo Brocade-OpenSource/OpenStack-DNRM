@@ -53,3 +53,18 @@ class DriverFactory(object):
             return driver
         else:
             raise exceptions.InvalidDriverName(driver_name=driver_name)
+
+    def get_names(self, resource_type):
+        drivers = []
+        resource_type = resource_type.split('.') or ['com']
+        for name, klass in self.driver_classes.items():
+            dt = klass.resource_type.split('.')
+            for i, p in enumerate(resource_type):
+                try:
+                    if dt[i] != p:
+                        break
+                except KeyError:
+                    break
+            else:
+                drivers.append(name)
+        return drivers
