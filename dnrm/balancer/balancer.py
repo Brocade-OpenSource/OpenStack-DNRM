@@ -81,7 +81,7 @@ class TaskBasedBalancer(Balancer):
 
 class SimpleBalancer(Balancer):
     def eliminate_deficit(self, deficit):
-        resources = self.list_resources(base.STATE_STARTED, deficit)
+        resources = self.get_resources(base.STATE_STARTED, deficit)
         self.push_resources(resources)
         deficit -= len(resources)
         if deficit > 0:
