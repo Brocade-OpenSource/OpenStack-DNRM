@@ -112,6 +112,7 @@ class ResourceManager(object):
                                                     'processing': True})
         task = tasks.WipeTask(resource)
         self.task_queue.push(task)
+        return resource
 
     def list(self, context, search_opts):
         so = {}

@@ -47,7 +47,29 @@ def model_query(model, session=None, **kwargs):
     return query
 
 
-##############################################################################
+def filters_to_condition(model, filter_fields, filter_values):
+    filter_values = copy.deepcopy(filter_values)
+    and_list = []
+    for key in filter_fields:
+        column = getattr(model, key)
+        if key not in filter_values:
+            continue
+        value = filter_values.pop(key)
+        if (isinstance(value, bool) and
+            not isinstance(column.prop, sa.Boolean)):
+            expr = (column != None) if value else (column == None)
+        elif isinstance(value, (list, tuple, set)):
+            expr = column.in_(set(value))
+        else:
+            expr = (column == value)
+        and_list.append(expr)
+    if and_list:
+        return sa.and_(*and_list)
+    else:
+        return None
+
+
+###############################################################################
 # Resources
 
 
@@ -113,27 +135,6 @@ def resource_delete(id):
         raise exceptions.ResourceNotFound(id=id)
 
 
-def filters_to_sa_condition(model, filter_fields, filter_values):
-    columns = model
-    filter_values = filter_values.copy()
-    and_list = []
-    for key in filter_fields:
-        try:
-            column = getattr(columns, key)
-            value = filter_values.pop(key)
-            if type(value) == list:
-                expr = column.in_(tuple(value))
-            else:
-                expr = (column == value)
-            and_list.append(expr)
-        except KeyError:
-            pass
-    if and_list:
-        return sa.and_(*and_list)
-    else:
-        return None
-
-
 def make_query(model, kwargs):
     kwargs = kwargs.copy()
 
@@ -146,10 +147,7 @@ def make_query(model, kwargs):
 
     query = model_query(models.Resource)
 
-    condition = filters_to_sa_condition(
-        model,
-        model.FILTER_FIELDS,
-        filters)
+    condition = filters_to_condition(model, model.FILTER_FIELDS, filters)
 
     if condition is not None:
         query = query.filter(condition)
