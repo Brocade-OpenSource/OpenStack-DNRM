@@ -80,7 +80,8 @@ class DNRMBalancerTestCase(base.BaseTestCase):
         self.unused_set.get.assert_called_once_with('status', None)
 
     def test_push_resources(self):
-        self.balancer.push_resources([{'id': 1}, {'id': 2}])
+        self.balancer.push_resources([{'id': 1, 'type': 'fake-resource-type'},
+                                      {'id': 2, 'type': 'fake-resource-type'}])
         self.pool.push.assert_has_calls([mock.call(1), mock.call(2)])
 
     def test_pop_resources(self):
@@ -88,7 +89,7 @@ class DNRMBalancerTestCase(base.BaseTestCase):
         self.pool.pop.assert_called_once_with(None)
 
     def test_start(self):
-        resource = {'id': 'fake-resource-id',
+        resource = {'id': 'fake-resource-id', 'type': 'fake-resource-type',
                     'status': resources.STATE_STOPPED}
         self.db.resource_update.return_value = \
             {'status': resources.STATE_STARTED}
@@ -98,40 +99,40 @@ class DNRMBalancerTestCase(base.BaseTestCase):
         task = self.queue.push.call_args[0][0]
         self.assertIsInstance(task, tasks.StartTask)
         self.assertDictEqual(
-            {'id': 'fake-resource-id', 'status': resources.STATE_STARTED},
-            task._resource
-        )
+            {'id': 'fake-resource-id', 'type': 'fake-resource-type',
+             'status': resources.STATE_STARTED}, task._resource)
 
     def test_stop(self):
-        resource = {'id': 'fake-resource-id',
+        resource = {'id': 'fake-resource-id', 'type': 'fake-resource-type',
                     'status': resources.STATE_STARTED}
         self.db.resource_update.return_value = \
-            {'status': resources.STATE_STOPPED}
+            {'type': 'fake-resource-type', 'status': resources.STATE_STOPPED}
         self.balancer.stop(resource)
         self.db.resource_update.assert_called_once_with(
             'fake-resource-id', {'status': resources.STATE_STOPPED})
         task = self.queue.push.call_args[0][0]
         self.assertIsInstance(task, tasks.StopTask)
         self.assertDictEqual(
-            {'id': 'fake-resource-id', 'status': resources.STATE_STOPPED},
-            task._resource
-        )
+            {'id': 'fake-resource-id', 'type': 'fake-resource-type',
+             'status': resources.STATE_STOPPED}, task._resource)
 
     def test_stop_unused(self):
-        res = [{'id': 'fake-resource-id-1', 'status': resources.STATE_STARTED},
-               {'id': 'fake-resource-id-2', 'status': resources.STATE_STARTED}]
+        res = [{'id': 'fake-resource-id-1', 'type': 'fake-resource-type',
+                'status': resources.STATE_STARTED},
+               {'id': 'fake-resource-id-2', 'type': 'fake-resource-type',
+                'status': resources.STATE_STARTED}]
         self.unused_set.list.return_value = res
         self.balancer.stop_unused()
         self.assertEqual(2, self.queue.push.call_count)
 
     def test_eliminate_deficit(self):
-        res1 = [{'id': 'fake-resource-id-1',
+        res1 = [{'id': 'fake-resource-id-1', 'type': 'fake-resource-type',
                  'status': resources.STATE_STARTED},
-                {'id': 'fake-resource-id-2',
+                {'id': 'fake-resource-id-2', 'type': 'fake-resource-type',
                  'status': resources.STATE_STARTED}]
-        res2 = [{'id': 'fake-resource-id-3',
+        res2 = [{'id': 'fake-resource-id-3', 'type': 'fake-resource-type',
                  'status': resources.STATE_STARTED},
-                {'id': 'fake-resource-id-4',
+                {'id': 'fake-resource-id-4', 'type': 'fake-resource-type',
                  'status': resources.STATE_STARTED}]
         self.unused_set.get.side_effect = [res1, res2]
         self.unused_set.list.return_value = res1
@@ -140,10 +141,11 @@ class DNRMBalancerTestCase(base.BaseTestCase):
         self.pool.push.assert_has_calls([mock.call(r['id']) for r in res1])
 
     def test_eliminate_overflow(self):
-        self.pool.pop.return_value = [{'id': 'fake-resource-id-1',
-                                       'status': resources.STATE_STARTED},
-                                      {'id': 'fake-resource-id-2',
-                                       'status': resources.STATE_STARTED}]
+        self.pool.pop.return_value = [
+            {'id': 'fake-resource-id-1', 'type': 'fake-resource-type',
+             'status': resources.STATE_STARTED},
+            {'id': 'fake-resource-id-2', 'type': 'fake-resource-type',
+             'status': resources.STATE_STARTED}]
         self.balancer.eliminate_overflow(2)
         self.pool.pop.assert_called_once_with(2)
         self.assertEqual(2, self.queue.push.call_count)
