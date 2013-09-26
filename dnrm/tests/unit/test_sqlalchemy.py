@@ -27,6 +27,7 @@ class FakeModel(models.BASE):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     name = sqlalchemy.Column(sqlalchemy.String(255))
     group = sqlalchemy.Column(sqlalchemy.Integer)
+    enabled = sqlalchemy.Column(sqlalchemy.Boolean)
 
 
 class FiltersTestCase(base.BaseTestCase):
@@ -53,6 +54,10 @@ class FiltersTestCase(base.BaseTestCase):
 
         cond = db.filters_to_condition(FakeModel, ['name'], {'name': True})
         self.assertEqual('fake.name IS NOT NULL', str(cond))
+
+        cond = db.filters_to_condition(FakeModel, ['enabled'],
+                                       {'enabled': True})
+        self.assertEqual('fake.enabled = :enabled_1', str(cond))
 
     def test_none(self):
         cond = db.filters_to_condition(FakeModel, ['name'], {})

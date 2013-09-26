@@ -56,7 +56,7 @@ def filters_to_condition(model, filter_fields, filter_values):
             continue
         value = filter_values.pop(key)
         if (isinstance(value, bool) and
-            not isinstance(column.prop, sa.Boolean)):
+            not isinstance(column.property.columns[0].type, sa.Boolean)):
             expr = (column != None) if value else (column == None)
         elif isinstance(value, (list, tuple, set)):
             expr = column.in_(set(value))
