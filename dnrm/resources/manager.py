@@ -80,7 +80,8 @@ class ResourceManager(object):
         driver.validate_resource(resource_data)
         resource = driver.prepare_resource(resources.STATE_STARTED,
                                            resource_data)
-        resource = db.resource_create(driver_name, resource)
+        resource['driver'] = driver_name
+        resource = db.resource_create(driver.resource_type, resource)
         return resource
 
     def delete(self, context, resource_id):

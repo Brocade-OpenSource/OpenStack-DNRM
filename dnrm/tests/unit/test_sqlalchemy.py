@@ -60,39 +60,43 @@ class FiltersTestCase(base.BaseTestCase):
 
 
 class ResourceTestCase(base.DBBaseTestCase):
+    @staticmethod
+    def _create(resource_type='fake-resource-type'):
+        res = db.resource_create(resource_type, {'driver': 'fake-driver'})
+        return res
+
     def test_create(self):
-        res = db.resource_create('fake-resource-type', {})
+        res = self._create()
         self.assertEqual('fake-resource-type', res['type'])
 
     def test_delete(self):
-        res = db.resource_create('fake-resource-type', {})
+        res = self._create()
         db.resource_delete(res['id'])
         self.assertRaises(exceptions.ResourceNotFound, db.resource_delete,
                           res['id'])
 
     def test_update(self):
-        res = db.resource_create('fake-resource-type', {})
+        res = self._create()
         res = db.resource_update(res['id'], {'processing': True})
         self.assertTrue(res['processing'])
 
     def test_get_by_id(self):
-        res = dict(db.resource_create('fake-resource-type', {}))
-        res2 = dict(db.resource_get_by_id(res['id']))
+        res = self._create()
+        res2 = db.resource_get_by_id(res['id'])
         self.assertDictEqual(res, res2)
 
     def test_count(self):
-        db.resource_create('fake-resource-type', {})
-        db.resource_create('fake-resource-type', {})
-        db.resource_create('fake-resource-type-2', {})
+        self._create()
+        self._create()
+        self._create('fake-resource-type-2')
         count = db.resource_count(
             {'filters': {'type': 'fake-resource-type'}}
         )
         self.assertEqual(2, count)
 
     def test_find(self):
-        resources = [dict(db.resource_create('fake-resource-type', {}))
-                     for _i in range(2)]
-        db.resource_create('fake-resource-type-2', {})
+        resources = [self._create() for _i in range(2)]
+        self._create('fake-resource-type-2')
         resources2 = db.resource_find(
             {'filters': {'type': 'fake-resource-type'}}
         )

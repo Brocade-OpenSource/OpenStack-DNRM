@@ -41,7 +41,7 @@ def db_cleanup():
     db_session.cleanup()
 
 
-def model_query(model, session=None, **kwargs):
+def model_query(model, session=None):
     session = session or db_session.get_session()
     query = session.query(model)
     return query
