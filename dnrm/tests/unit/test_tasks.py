@@ -41,27 +41,28 @@ class TasksTestCase(base.BaseTestCase):
         return mock_object
 
     def _make_resource(self):
-        return dict(state=resources.STATE_STOPPED, type='foobar')
+        return dict(state=resources.STATE_STOPPED, type='foobar',
+                    driver='fake-driver')
 
     def test_start_task(self):
         resource = self._make_resource()
         task = tasks.StartTask(resource)
         self.assertEquals(resource, task.execute(self.factory))
-        self.factory.get.assert_called_once_with('foobar')
+        self.factory.get.assert_called_once_with('fake-driver')
         self.driver.init.assert_called_once_with(resource)
 
     def test_stop_task(self):
         resource = self._make_resource()
         task = tasks.StopTask(resource)
         self.assertEquals(resource, task.execute(self.factory))
-        self.factory.get.assert_called_once_with('foobar')
+        self.factory.get.assert_called_once_with('fake-driver')
         self.driver.stop.assert_called_once_with(resource)
 
     def test_wipe_task(self):
         resource = self._make_resource()
         task = tasks.WipeTask(resource)
         self.assertEquals(resource, task.execute(self.factory))
-        self.factory.get.assert_called_once_with('foobar')
+        self.factory.get.assert_called_once_with('fake-driver')
         self.driver.wipe.assert_called_once_with(resource)
 
     def test_delete_task(self):
@@ -69,5 +70,5 @@ class TasksTestCase(base.BaseTestCase):
         task = tasks.DeleteTask(resource)
         self.assertEquals(resource, task.execute(self.factory))
         self.assertTrue(resource['deleted'])
-        self.factory.get.assert_called_once_with('foobar')
+        self.factory.get.assert_called_once_with('fake-driver')
         self.driver.stop.assert_called_once_with(resource)

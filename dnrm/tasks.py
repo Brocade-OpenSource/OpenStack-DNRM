@@ -42,7 +42,7 @@ class StartTask(Task):
 
     def execute(self, driver_factory):
         resource = self._resource
-        driver = driver_factory.get(resource['type'])
+        driver = driver_factory.get(resource['driver'])
         driver.init(resource)
         resource['status'] = base.STATE_STARTED
         return resource
@@ -56,7 +56,7 @@ class StopTask(Task):
 
     def execute(self, driver_factory):
         resource = self._resource
-        driver = driver_factory.get(resource['type'])
+        driver = driver_factory.get(resource['driver'])
         driver.stop(resource)
         resource['status'] = base.STATE_STOPPED
         if 'address' in resource:
@@ -74,7 +74,7 @@ class WipeTask(Task):
 
     def execute(self, driver_factory):
         resource = self._resource
-        driver = driver_factory.get(resource['type'])
+        driver = driver_factory.get(resource['driver'])
         driver.wipe(resource)
         return resource
 
@@ -87,7 +87,7 @@ class DeleteTask(Task):
 
     def execute(self, driver_factory):
         resource = self._resource
-        driver = driver_factory.get(resource['type'])
+        driver = driver_factory.get(resource['driver'])
         driver.stop(resource)
         resource['deleted'] = True
         return resource

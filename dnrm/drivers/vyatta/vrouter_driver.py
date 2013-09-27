@@ -83,7 +83,7 @@ class InstanceBootTimeout(exceptions.DriverException):
 
 
 class VyattaVRouterDriver(base.DriverBase):
-    resource_type = 'com.router.vyatta'
+    resource_type = 'com.router'
 
     def __init__(self):
         self.management_net = netaddr.IPNetwork(
