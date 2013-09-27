@@ -17,10 +17,13 @@
 """
 Module contains task classes used by balancer.
 """
-
 import abc
 
+from dnrm.openstack.common import excutils
+from dnrm.openstack.common import log
 from dnrm.resources import base
+
+LOG = log.getLogger(__name__)
 
 
 class Task(object):
@@ -90,8 +93,17 @@ class DeleteTask(Task):
     success_state = base.STATE_DELETED
     fail_state = base.STATE_ERROR
 
+    def __init__(self, resource, force=False):
+        super(DeleteTask, self).__init__(resource)
+        self._force = force
+
     def execute(self, driver_factory):
         resource = self._resource
         driver = driver_factory.get(resource['type'])
-        driver.stop(resource)
+        try:
+            driver.stop(resource)
+        except Exception:
+            with excutils.save_and_reraise_exception() as exc_reraiser:
+                LOG.exception(_('Failed to delete resource'))
+                exc_reraiser.reraise = not self._force
         return resource

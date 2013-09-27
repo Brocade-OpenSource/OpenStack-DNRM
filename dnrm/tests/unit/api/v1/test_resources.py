@@ -86,4 +86,4 @@ class ResourceApiTest(base.DBBaseTestCase):
         req.method = 'DELETE'
         self.manager.get.return_value = {'id': FAKE_RESOURCE_ID}
         self.controller.delete(req, FAKE_RESOURCE_ID)
-        self.manager.delete.assert_called_with(None, FAKE_RESOURCE_ID)
+        self.manager.delete.assert_called_with(None, FAKE_RESOURCE_ID, False)

@@ -88,9 +88,14 @@ class ResourceController(wsgi.Controller):
         context = request.environ.get('dnrm.context', None)
         LOG.audit(_("Delete resource with id: %s"), resource_id,
                   context=context)
-
+        query = dict(request.GET)
+        force = query.get('force', False)
+        if force and isinstance(force, basestring) and force.lower() == 'true':
+            force = True
+        else:
+            force = False
         try:
-            self.resource_manager.delete(context, resource_id)
+            self.resource_manager.delete(context, resource_id, force)
         except exceptions.ResourceNotFound:
             raise exc.HTTPNotFound()
         return webob.Response(status_int=204)
