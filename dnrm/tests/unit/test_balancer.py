@@ -170,8 +170,7 @@ class DNRMBalancerTestCase(base.BaseTestCase):
             mockpatch.PatchObject(self.balancer, 'eliminate_deficit')).mock
         overflow = self.useFixture(
             mockpatch.PatchObject(self.balancer, 'eliminate_overflow')).mock
-        self.useFixture(mockpatch.PatchObject(self.balancer,
-                                              'stop_unused'))
+        self.useFixture(mockpatch.PatchObject(self.balancer, 'stop_unused'))
         self.balancer.balance()
         overflow.asserd_called_once_with(10)
         self.assertEqual(0, deficit.call_count)

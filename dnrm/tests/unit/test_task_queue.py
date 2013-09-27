@@ -107,7 +107,7 @@ class QueuedTaskWorkerTestCase(base.BaseTestCase):
 
     def test_execute_exception(self):
         task = mock.MagicMock()
-        task.execute.side_effect = RuntimeError()
+        task.execute.side_effect = RuntimeError('fake-exception for test')
         self.task_queue.push(task)
         self.worker.start()
         greenthread.sleep()

@@ -16,13 +16,12 @@
 #    under the License.
 
 import webob
+from webob import exc
 
-from dnrm import wsgi
-
-from dnrm.openstack.common import exception
+from dnrm import exceptions
 from dnrm.openstack.common import log as logging
 from dnrm.resources import manager
-from webob import exc
+from dnrm import wsgi
 
 LOG = logging.getLogger(__name__)
 
@@ -47,14 +46,15 @@ class ResourceController(wsgi.Controller):
             raise exc.HTTPBadRequest()
         resource = body['resource']
         resource_type = resource.get('resource_type', None)
-        self.resource_manager.add(context, resource_type, resource)
+        resource = self.resource_manager.add(context, resource_type, resource)
+        return resource
 
     def show(self, request, resource_id):
         """Get a resource."""
         context = request.environ.get('dnrm.context', None)
         try:
             resource = self.resource_manager.get(context, resource_id)
-        except exception.NotFound:
+        except exceptions.ResourceNotFound:
             raise exc.HTTPNotFound()
         return {'resource': resource}
 
@@ -67,18 +67,12 @@ class ResourceController(wsgi.Controller):
         if 'resource' not in body:
             raise exc.HTTPBadRequest()
 
-        update_dict = body['resource']
-        if 'status' in update_dict:
-            del update_dict['status']
-        if 'driver_name' in update_dict:
-            del update_dict['driver_name']
-
         try:
             resource = self.resource_manager.get(context, resource_id)
-        except exception.NotFound:
+        except exceptions.ResourceNotFound:
             raise exc.HTTPNotFound()
 
-        allocate = update_dict.get('allocated', None)
+        allocate = body['resource'].get('allocated', None)
         if allocate is not None:
             if allocate is True:
                 resource = self.resource_manager.allocate(context,
@@ -96,9 +90,8 @@ class ResourceController(wsgi.Controller):
                   context=context)
 
         try:
-            resource = self.resource_manager.get(context, resource_id)
-            self.resource_manager.delete(context, resource['id'])
-        except exception.NotFound:
+            self.resource_manager.delete(context, resource_id)
+        except exceptions.ResourceNotFound:
             raise exc.HTTPNotFound()
         return webob.Response(status_int=204)
 
