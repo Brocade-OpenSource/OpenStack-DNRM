@@ -80,8 +80,7 @@ class ResourceManager(object):
         driver.validate_resource(resource_data)
         resource = driver.prepare_resource(resources.STATE_STARTED,
                                            resource_data)
-        resource['driver'] = driver_name
-        resource = db.resource_create(driver.resource_type, resource)
+        resource = db.resource_create(driver_name, resource)
         return resource
 
     def delete(self, context, resource_id):
@@ -121,22 +120,8 @@ class ResourceManager(object):
             if key in search_opts:
                 so[key] = search_opts.pop(key)
 
-        filters = {}
-
-        types = []
-        if 'driver_name' in search_opts:
-            types.append(search_opts.pop('driver_name'))
-        resource_type = search_opts.pop('resource_type', None)
-        if resource_type:
-            types += self.driver_factory.get_names(resource_type)
-        if types:
-            filters['type'] = types
-
         if search_opts:
-            filters.update(search_opts)
-
-        if filters:
-            so['filters'] = filters
+            so['filters'] = search_opts
 
         return db.resource_find(so)
 

@@ -39,8 +39,8 @@ class DriverFactory(object):
                 if issubclass(driver_class, base.DriverBase):
                     self.driver_classes[driver_class_name] = driver_class
             except Exception:
-                LOG.exception(
-                    _('Failed to import driver class: %s') % driver_class_name)
+                LOG.exception(_('Failed to import driver class: %(name)s'),
+                              name=driver_class_name)
 
     def get(self, driver_name):
         """Creates resource by it's type."""
@@ -54,17 +54,9 @@ class DriverFactory(object):
         else:
             raise exceptions.InvalidDriverName(driver_name=driver_name)
 
-    def get_names(self, resource_type):
+    def get_names(self, resource_class):
         drivers = []
-        resource_type = resource_type.split('.') or ['com']
         for name, klass in self.driver_classes.items():
-            dt = klass.resource_type.split('.')
-            for i, p in enumerate(resource_type):
-                try:
-                    if dt[i] != p:
-                        break
-                except KeyError:
-                    break
-            else:
+            if klass.resource_class == resource_class:
                 drivers.append(name)
         return drivers

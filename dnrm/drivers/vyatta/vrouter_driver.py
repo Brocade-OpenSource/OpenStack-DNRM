@@ -83,7 +83,7 @@ class InstanceBootTimeout(exceptions.DriverException):
 
 
 class VyattaVRouterDriver(base.DriverBase):
-    resource_type = 'com.router'
+    resource_class = 'L3'
 
     def __init__(self):
         self.management_net = netaddr.IPNetwork(
@@ -191,7 +191,8 @@ class VyattaVRouterDriver(base.DriverBase):
 
     def prepare_resource(self, state):
         if state == resources.STATE_STOPPED:
-            return dict(status=resources.STATE_STOPPED)
+            return {'status': resources.STATE_STOPPED,
+                    'class': self.resource_class}
         else:
             raise NotImplementedError()
 

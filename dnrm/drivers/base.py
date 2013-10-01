@@ -24,7 +24,7 @@ class DriverBase(object):
 
     __metaclass__ = abc.ABCMeta
 
-    resource_type = None
+    resource_class = None
 
     @abc.abstractmethod
     def init(self, resource):

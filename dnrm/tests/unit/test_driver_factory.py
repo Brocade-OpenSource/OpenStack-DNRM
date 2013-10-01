@@ -23,7 +23,7 @@ from dnrm.tests import base
 
 
 class TestDriver1(driver_base.DriverBase):
-    resource_type = 'com.router.test1'
+    resource_class = 'L3'
 
     def init(self, resource):
         pass
@@ -48,7 +48,7 @@ class TestDriver1(driver_base.DriverBase):
 
 
 class TestDriver2(TestDriver1):
-    resource_type = 'com.router.test2'
+    resource_class = 'L3'
 
 
 class DriverFactoryTestCase(base.BaseTestCase):
@@ -71,18 +71,9 @@ class DriverFactoryTestCase(base.BaseTestCase):
                                             mock.call('foo.bar.test2')])
 
     def test_get_names_all(self):
-        drivers = self.factory.get_names('com.router')
+        drivers = self.factory.get_names('L3')
         self.assertEqual(2, len(drivers))
 
-    def test_get_names_one(self):
-        drivers = self.factory.get_names('com.router.test1')
-        self.assertEqual(1, len(drivers))
-        self.assertEqual(drivers[0], 'foo.bar.test1')
-
-        drivers = self.factory.get_names('com.router.test2')
-        self.assertEqual(1, len(drivers))
-        self.assertEqual(drivers[0], 'foo.bar.test2')
-
     def test_get_names_null(self):
-        drivers = self.factory.get_names('com.router.test3')
+        drivers = self.factory.get_names('L2')
         self.assertEqual(0, len(drivers))

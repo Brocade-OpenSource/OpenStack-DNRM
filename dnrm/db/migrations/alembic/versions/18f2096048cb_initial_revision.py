@@ -40,7 +40,7 @@ def upgrade():
         'resources',
         sa.Column('id', sa.String(length=36), nullable=False),
         sa.Column('type', sa.String(length=250), nullable=False),
-        sa.Column('driver', sa.String(length=250), nullable=False),
+        sa.Column('klass', sa.String(length=250), nullable=False),
         sa.Column('status', sa.Enum(*STATES), default='STOPPED'),
         sa.Column('description', sa.String(255), nullable=True),
         sa.Column('data', sa.Text(), nullable=True),

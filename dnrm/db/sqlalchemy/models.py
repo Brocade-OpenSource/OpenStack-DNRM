@@ -66,10 +66,10 @@ class Resource(BASE, DNRMBase, HasId):
     MAX_RESOURCE_TYPE_LENGTH = 250
 
     FILTER_FIELDS = ['type', 'status', 'pool', 'processing', 'allocated',
-                     'deleted', 'description', 'driver']
+                     'deleted', 'description', 'klass']
 
     type = sa.Column(sa.String(MAX_RESOURCE_TYPE_LENGTH), nullable=False)
-    driver = sa.Column(sa.String(MAX_RESOURCE_TYPE_LENGTH), nullable=False)
+    klass = sa.Column(sa.String(MAX_RESOURCE_TYPE_LENGTH), nullable=False)
     status = sa.Column(sa.Enum(*STATES), nullable=False,
                        default=base.STATE_STOPPED)
     description = sa.Column(sa.Text)

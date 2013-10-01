@@ -33,9 +33,7 @@ class UnusedSet(object):
                     driver = self.driver_factory.get(self.driver_name)
                     resource = driver.prepare_resource(state)
                     resource['processing'] = True
-                    resource['driver'] = self.driver_name
-                    resource = db.resource_create(driver.resource_type,
-                                                  resource)
+                    resource = db.resource_create(self.driver_name, resource)
                     resources.append(resource)
             except NotImplementedError:
                 pass

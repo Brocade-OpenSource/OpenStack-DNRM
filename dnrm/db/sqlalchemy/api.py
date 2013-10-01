@@ -49,6 +49,8 @@ def model_query(model, session=None):
 
 def filters_to_condition(model, filter_fields, filter_values):
     filter_values = copy.deepcopy(filter_values)
+    if 'class' in filter_values:
+        filter_values['klass'] = filter_values.pop('class')
     and_list = []
     for key in filter_fields:
         column = getattr(model, key)
@@ -75,6 +77,7 @@ def filters_to_condition(model, filter_fields, filter_values):
 
 def _resource_to_dict(resource):
     resource = dict(resource)
+    resource['class'] = resource.pop('klass')
     data = resource.pop('data', {})
     resource.update(data)
     return resource
@@ -84,6 +87,8 @@ def _update_resource(resource, values):
     values = copy.deepcopy(values)
     if 'id' in values:
         del values['id']
+    if 'class' in values:
+        values['klass'] = values.pop('class')
     validated_values = {}
     for key in models.Resource.FILTER_FIELDS:
         try:
@@ -91,16 +96,16 @@ def _update_resource(resource, values):
         except KeyError:
             pass
     if values:
-        data = resource['data'] or {}
+        data = copy.deepcopy(resource['data']) or {}
         data.update(values)
         validated_values['data'] = data
     resource.update(validated_values)
 
 
-def resource_create(resource_type, values):
+def resource_create(driver_name, values):
     resource = models.Resource()
     _update_resource(resource, values)
-    resource['type'] = resource_type
+    resource['type'] = driver_name
     resource.save()
     return _resource_to_dict(resource)
 
