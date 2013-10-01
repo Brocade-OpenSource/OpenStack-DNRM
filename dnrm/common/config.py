@@ -33,8 +33,6 @@ core_opts = [
                help=_("The port to bind to")),
     cfg.StrOpt('api_paste_config', default="api-paste.ini",
                help=_("The API paste config file to use")),
-    cfg.StrOpt('auth_strategy', default='keystone',
-               help=_("The type of authentication to use")),
     cfg.IntOpt('task_queue_timeout', default=5,
                help=_("Number of seconds for worker to wait on task queue.")),
     cfg.IntOpt('workers_count', default=5, help=_("Number of workers.")),
