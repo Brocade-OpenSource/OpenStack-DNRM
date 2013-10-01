@@ -103,7 +103,7 @@ class PoolTestCase(base.BaseTestCase):
 
         self.assertListEqual(resources, pop_resources)
         self.db.resource_find.assert_called_with({'filters': {
-            'pool': self.pool_name
+            'pool': self.pool_name, 'allocated': False
         }})
 
         self.assertEqual(1, self.db.resource_find.call_count)
@@ -115,7 +115,7 @@ class PoolTestCase(base.BaseTestCase):
 
         self.assertEqual(2, count)
         self.db.resource_count.assert_called_with({'filters': {
-            'pool': self.pool_name
+            'pool': self.pool_name, 'allocated': False
         }})
 
 

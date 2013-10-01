@@ -54,8 +54,8 @@ class ResourceManager(object):
             new_unused_set = unused_set.UnusedSet(driver_name,
                                                   self.driver_factory)
             conf = config.get_driver_config(driver_name)
-            low_watermark = conf.get('low_watermark')
-            high_watermark = conf.get('high_watermark')
+            low_watermark = int(conf.get('low_watermark'))
+            high_watermark = int(conf.get('high_watermark'))
             bal = self.balancer_manager.add_balancer(new_pool, new_unused_set,
                                                      low_watermark,
                                                      high_watermark)
@@ -99,7 +99,6 @@ class ResourceManager(object):
             raise exceptions.ResourceProcessing(resource_id=resource_id)
         if resource['allocated']:
             raise exceptions.ResourceAllocated(resource_id=resource_id)
-        self.pools[resource['type']]['pool'].pop_resource(resource_id)
         resource = db.resource_update(resource_id, {'allocated': True,
                                                     'processing': False})
         return resource

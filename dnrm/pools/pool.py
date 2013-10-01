@@ -47,9 +47,11 @@ class Pool(object):
         return resource
 
     def list(self):
-        resources = db.resource_find({'filters': {'pool': self.name}})
+        resources = db.resource_find({'filters': {'pool': self.name,
+                                                  'allocated': False}})
         return resources
 
     def count(self):
-        count = db.resource_count({'filters': {'pool': self.name}})
+        count = db.resource_count({'filters': {'pool': self.name,
+                                               'allocated': False}})
         return count
