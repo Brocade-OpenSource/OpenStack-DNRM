@@ -62,8 +62,11 @@ class DNRMBalancerTestCase(base.BaseTestCase):
         self.unused_set = mock.Mock()
         self.queue = mock.Mock()
 
-        self.db = self.useFixture(mockpatch.Patch('dnrm.balancer.balancer.'
-                                                  'db')).mock
+        def push_side_effect(task):
+            res = task._resource
+            res['status'] = task.success_state
+
+        self.queue.push.side_effect = push_side_effect
 
         self.balancer = balancer.DNRMBalancer(self.pool, self.unused_set, 10,
                                               20, self.queue)
@@ -91,11 +94,7 @@ class DNRMBalancerTestCase(base.BaseTestCase):
     def test_start(self):
         resource = {'id': 'fake-resource-id', 'type': 'fake-resource-type',
                     'status': resources.STATE_STOPPED}
-        self.db.resource_update.return_value = \
-            {'status': resources.STATE_STARTED}
         self.balancer.start(resource)
-        self.db.resource_update.assert_called_once_with(
-            'fake-resource-id', {'status': resources.STATE_STARTED})
         task = self.queue.push.call_args[0][0]
         self.assertIsInstance(task, tasks.StartTask)
         self.assertDictEqual(
@@ -105,11 +104,7 @@ class DNRMBalancerTestCase(base.BaseTestCase):
     def test_stop(self):
         resource = {'id': 'fake-resource-id', 'type': 'fake-resource-type',
                     'status': resources.STATE_STARTED}
-        self.db.resource_update.return_value = \
-            {'type': 'fake-resource-type', 'status': resources.STATE_STOPPED}
         self.balancer.stop(resource)
-        self.db.resource_update.assert_called_once_with(
-            'fake-resource-id', {'status': resources.STATE_STOPPED})
         task = self.queue.push.call_args[0][0]
         self.assertIsInstance(task, tasks.StopTask)
         self.assertDictEqual(

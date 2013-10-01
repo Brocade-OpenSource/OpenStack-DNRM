@@ -69,9 +69,20 @@ class QueuedTaskWorker(Worker):
             try:
                 resource = task.execute(self._driver_factory)
                 resource['processing'] = False
+                resource['status'] = task.success_state
+                LOG.debug(
+                    _('Resource state change: %(id)s/%(status)s') % resource)
                 db_api.resource_update(resource['id'], resource)
             except Exception:
                 LOG.exception(_('Exception executing task %s.') % repr(task))
+                resource_id = task.get_resource_id()
+                LOG.debug(_('Resource state change: %(id)s/%(status)s') % {
+                    'id': resource['id'],
+                    'status': task.fail_state,
+                })
+                db_api.resource_update(resource_id, {'status': task.fail_state,
+                                                     'processing': False})
+            # TODO(anfrolov): mark task as finished in database
 
     def start(self):
         if not self._running:
@@ -95,6 +106,14 @@ class TaskQueue(object):
         Adds new task to queue. Unblocks one worker waiting on pop call if
         there is any.
         """
+        # TODO(anfrolov): save task to database
+        resource_id = task.get_resource_id()
+        LOG.debug(_('Resource state change: %(id)s/%(status)s') % {
+            'id': resource_id,
+            'status': task.process_state,
+        })
+        db_api.resource_update(resource_id, {'status': task.process_state,
+                                             'processing': True})
         self._queue.put(task)
 
     def pop(self, block=True, timeout=None):
@@ -107,6 +126,7 @@ class TaskQueue(object):
         return None (timeout is ignored in that case).
         """
         try:
+            # TODO(anfrolov): mark task as task in process in database
             return self._queue.get(block=block, timeout=timeout)
         except queue.Empty:
             return None

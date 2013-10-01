@@ -16,7 +16,6 @@
 #    under the License.
 import abc
 
-from dnrm import db
 from dnrm.openstack.common import log
 from dnrm.resources import base
 from dnrm import tasks
@@ -50,17 +49,13 @@ class Balancer(object):
                                                              else count})
         return self._pool.pop(count)
 
+    @abc.abstractmethod
     def start(self, resource):
-        if resource['status'] == base.STATE_STOPPED:
-            LOG.debug(_('Start resource: %(id)s/%(type)s') % resource)
-            resource.update(db.resource_update(
-                resource['id'], {'status': base.STATE_STARTED}))
+        pass
 
+    @abc.abstractmethod
     def stop(self, resource):
-        if resource['status'] == base.STATE_STARTED:
-            LOG.debug(_('Stop resource: %(id)s/%(type)s') % resource)
-            resource.update(db.resource_update(
-                resource['id'], {'status': base.STATE_STOPPED}))
+        pass
 
     @abc.abstractmethod
     def balance(self):

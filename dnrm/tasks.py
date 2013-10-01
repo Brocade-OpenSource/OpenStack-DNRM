@@ -28,49 +28,53 @@ class Task(object):
 
     __metaclass__ = abc.ABCMeta
 
+    def __init__(self, resource):
+        self._resource = resource
+
     @abc.abstractmethod
     def execute(self, driver_factory):
         """Called by task queue workers when they start to work on task."""
         pass
 
+    def get_resource_id(self):
+        """Returns resource id that task is working on."""
+        return self._resource['id']
+
 
 class StartTask(Task):
     """Task that puts resource to started state."""
 
-    def __init__(self, resource):
-        self._resource = resource
+    process_state = base.STATE_STARTING
+    success_state = base.STATE_STARTED
+    fail_state = base.STATE_ERROR
 
     def execute(self, driver_factory):
         resource = self._resource
         driver = driver_factory.get(resource['driver'])
         driver.init(resource)
-        resource['status'] = base.STATE_STARTED
         return resource
 
 
 class StopTask(Task):
     """Task that puts resource to stopped state."""
 
-    def __init__(self, resource):
-        self._resource = resource
+    process_state = base.STATE_STOPPING
+    success_state = base.STATE_STOPPED
+    fail_state = base.STATE_ERROR
 
     def execute(self, driver_factory):
         resource = self._resource
         driver = driver_factory.get(resource['driver'])
         driver.stop(resource)
-        resource['status'] = base.STATE_STOPPED
-        if 'address' in resource:
-            del resource['address']
-        if 'instance_id' in resource:
-            del resource['instance_id']
         return resource
 
 
 class WipeTask(Task):
     """Task that wipes task state."""
 
-    def __init__(self, resource):
-        self._resource = resource
+    process_state = base.STATE_WIPING
+    success_state = base.STATE_STARTED
+    fail_state = base.STATE_ERROR
 
     def execute(self, driver_factory):
         resource = self._resource
@@ -82,12 +86,12 @@ class WipeTask(Task):
 class DeleteTask(Task):
     """Task that marks resource as deleted."""
 
-    def __init__(self, resource):
-        self._resource = resource
+    process_state = base.STATE_DELETING
+    success_state = base.STATE_DELETED
+    fail_state = base.STATE_ERROR
 
     def execute(self, driver_factory):
         resource = self._resource
         driver = driver_factory.get(resource['driver'])
         driver.stop(resource)
-        resource['deleted'] = True
         return resource
