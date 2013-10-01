@@ -28,6 +28,7 @@ class FakeModel(models.BASE):
     name = sqlalchemy.Column(sqlalchemy.String(255))
     group = sqlalchemy.Column(sqlalchemy.Integer)
     enabled = sqlalchemy.Column(sqlalchemy.Boolean)
+    pool = sqlalchemy.Column(sqlalchemy.String(255))
 
 
 class FiltersTestCase(base.BaseTestCase):
@@ -49,12 +50,6 @@ class FiltersTestCase(base.BaseTestCase):
         self.assertEqual('fake.name = :name_1', str(cond))
 
     def test_bool(self):
-        cond = db.filters_to_condition(FakeModel, ['name'], {'name': False})
-        self.assertEqual('fake.name IS NULL', str(cond))
-
-        cond = db.filters_to_condition(FakeModel, ['name'], {'name': True})
-        self.assertEqual('fake.name IS NOT NULL', str(cond))
-
         cond = db.filters_to_condition(FakeModel, ['enabled'],
                                        {'enabled': True})
         self.assertEqual('fake.enabled = :enabled_1', str(cond))
@@ -62,6 +57,19 @@ class FiltersTestCase(base.BaseTestCase):
     def test_none(self):
         cond = db.filters_to_condition(FakeModel, ['name'], {})
         self.assertIsNone(cond)
+
+    def test_unused(self):
+        cond = db.filters_to_condition(FakeModel, [], {'unused': True})
+        self.assertEqual('fake.pool IS NULL', str(cond))
+
+        cond = db.filters_to_condition(FakeModel, [], {'unused': 'True'})
+        self.assertEqual('fake.pool IS NULL', str(cond))
+
+        cond = db.filters_to_condition(FakeModel, [], {'unused': False})
+        self.assertEqual('fake.pool IS NOT NULL', str(cond))
+
+        cond = db.filters_to_condition(FakeModel, [], {'unused': 'False'})
+        self.assertEqual('fake.pool IS NOT NULL', str(cond))
 
 
 class ResourceTestCase(base.DBBaseTestCase):

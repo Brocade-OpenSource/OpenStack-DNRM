@@ -52,15 +52,19 @@ def filters_to_condition(model, filter_fields, filter_values):
     if 'class' in filter_values:
         filter_values['klass'] = filter_values.pop('class')
     and_list = []
+    if 'unused' in filter_values:
+        unused = filter_values.pop('unused')
+        if unused and (not isinstance(unused, (str, unicode)) or
+                       unused.lower() != 'false'):
+            and_list.append(model.pool == None)
+        else:
+            and_list.append(model.pool != None)
     for key in filter_fields:
         column = getattr(model, key)
         if key not in filter_values:
             continue
         value = filter_values.pop(key)
-        if (isinstance(value, bool) and
-            not isinstance(column.property.columns[0].type, sa.Boolean)):
-            expr = (column != None) if value else (column == None)
-        elif isinstance(value, (list, tuple, set)):
+        if isinstance(value, (list, tuple, set)):
             expr = column.in_(set(value))
         else:
             expr = (column == value)
@@ -80,13 +84,15 @@ def _resource_to_dict(resource):
     resource['class'] = resource.pop('klass')
     data = resource.pop('data', {})
     resource.update(data)
+    resource['unused'] = resource['pool'] is None
     return resource
 
 
 def _update_resource(resource, values):
     values = copy.deepcopy(values)
-    if 'id' in values:
-        del values['id']
+    for key in ('id', 'unused'):
+        if key in values:
+            del values[key]
     if 'class' in values:
         values['klass'] = values.pop('class')
     validated_values = {}
