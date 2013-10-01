@@ -27,8 +27,17 @@ from eventlet import queue
 
 
 class TestTask(tasks.Task):
+    def __init__(self, process_state=resource_base.STATE_ERROR,
+                 success_state=resource_base.STATE_ERROR,
+                 fail_state=resource_base.STATE_ERROR):
+        self.process_state = process_state
+        self.success_state = success_state
+        self.fail_state = fail_state
+        res = dict(id='fake-id', status=resource_base.STATE_STOPPED, foo='bar')
+        super(TestTask, self).__init__(res)
+
     def execute(self):
-        return dict(state=resource_base.STATE_STOPPED, foo='bar')
+        return self._resource
 
 
 class MockedEventletTestCase(base.BaseTestCase):
@@ -40,6 +49,7 @@ class MockedEventletTestCase(base.BaseTestCase):
         self.driver_factory = mock.MagicMock()
         self.worker = task_queue.QueuedTaskWorker(self.task_queue,
                                                   self.driver_factory)
+        self.db = self._mock('dnrm.db.api.resource_update')
         super(MockedEventletTestCase, self).setUp()
 
     def _mock(self, function, retval=None, side_effect=None):
@@ -83,6 +93,7 @@ class QueuedTaskWorkerTestCase(base.BaseTestCase):
         self.driver_factory = mock.MagicMock()
         self.worker = task_queue.QueuedTaskWorker(self.task_queue,
                                                   self.driver_factory)
+        self.db = self._mock('dnrm.db.api')
         super(QueuedTaskWorkerTestCase, self).setUp()
 
     def _mock(self, function, retval=None, side_effect=None):
@@ -103,7 +114,7 @@ class QueuedTaskWorkerTestCase(base.BaseTestCase):
         self.worker.start()
         greenthread.sleep()
         task.execute.assert_called_once(self.driver_factory)
-        self.resource_update.assert_called_once_with('fake-id', resource)
+        self.resource_update.assert_called_with('fake-id', resource)
 
     def test_execute_exception(self):
         task = mock.MagicMock()

@@ -41,7 +41,7 @@ class TasksTestCase(base.BaseTestCase):
         return mock_object
 
     def _make_resource(self):
-        return dict(state=resources.STATE_STOPPED, type='foobar',
+        return dict(status=resources.STATE_STOPPED, type='foobar',
                     driver='fake-driver')
 
     def test_start_task(self):
@@ -69,6 +69,5 @@ class TasksTestCase(base.BaseTestCase):
         resource = self._make_resource()
         task = tasks.DeleteTask(resource)
         self.assertEquals(resource, task.execute(self.factory))
-        self.assertTrue(resource['deleted'])
         self.factory.get.assert_called_once_with('fake-driver')
         self.driver.stop.assert_called_once_with(resource)
