@@ -61,7 +61,9 @@ class HasId(object):
 class Resource(BASE, DNRMBase, HasId):
     __tablename__ = 'resources'
 
-    STATES = (base.STATE_STARTED, base.STATE_STOPPED, base.STATE_ERROR)
+    STATES = (base.STATE_STARTED, base.STATE_STOPPED, base.STATE_ERROR,
+              base.STATE_DELETED, base.STATE_STARTING, base.STATE_STOPPING,
+              base.STATE_DELETING, base.STATE_WIPING)
 
     MAX_RESOURCE_TYPE_LENGTH = 250
 

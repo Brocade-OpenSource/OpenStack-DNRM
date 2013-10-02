@@ -30,9 +30,8 @@ from alembic import op
 import sqlalchemy as sa
 
 
-STATES = ('STOPPED',
-          'STARTED',
-          'ERROR')
+STATES = ('STOPPED', 'STARTED', 'ERROR', 'DELETED', 'STARTING', 'STOPPING',
+          'DELETING', 'WIPING')
 
 
 def upgrade():
