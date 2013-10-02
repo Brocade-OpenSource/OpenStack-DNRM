@@ -120,7 +120,7 @@ class SimpleBalancer(Balancer):
         )
         # Eliminate deficit.
         deficit = (self.low_watermark - self._pool.count() -
-                   self._unused_set.count(base.STATE_STARTED, True))
+                   self._unused_set.count(base.ACTIVE_STATES, True))
         if deficit > 0:
             self.eliminate_deficit(deficit)
 

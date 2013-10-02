@@ -47,15 +47,18 @@ def model_query(model, session=None):
     return query
 
 
+def falsy(value):
+    return bool(value) and (not isinstance(value, (str, unicode)) or
+                            value.lower() != 'false')
+
+
 def filters_to_condition(model, filter_fields, filter_values):
     filter_values = copy.deepcopy(filter_values)
     if 'class' in filter_values:
         filter_values['klass'] = filter_values.pop('class')
     and_list = []
     if 'unused' in filter_values:
-        unused = filter_values.pop('unused')
-        if unused and (not isinstance(unused, (str, unicode)) or
-                       unused.lower() != 'false'):
+        if falsy(filter_values.pop('unused')):
             and_list.append(model.pool == None)
         else:
             and_list.append(model.pool != None)
@@ -64,6 +67,8 @@ def filters_to_condition(model, filter_fields, filter_values):
         if key not in filter_values:
             continue
         value = filter_values.pop(key)
+        if isinstance(column.property.columns[0].type, sa.Boolean):
+            value = falsy(value)
         if isinstance(value, (list, tuple, set)):
             expr = column.in_(set(value))
         else:
