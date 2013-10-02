@@ -50,7 +50,7 @@ class StartTask(Task):
 
     def execute(self, driver_factory):
         resource = self._resource
-        driver = driver_factory.get(resource['driver'])
+        driver = driver_factory.get(resource['type'])
         driver.init(resource)
         return resource
 
@@ -64,7 +64,7 @@ class StopTask(Task):
 
     def execute(self, driver_factory):
         resource = self._resource
-        driver = driver_factory.get(resource['driver'])
+        driver = driver_factory.get(resource['type'])
         driver.stop(resource)
         return resource
 
@@ -78,7 +78,7 @@ class WipeTask(Task):
 
     def execute(self, driver_factory):
         resource = self._resource
-        driver = driver_factory.get(resource['driver'])
+        driver = driver_factory.get(resource['type'])
         driver.wipe(resource)
         return resource
 
@@ -92,6 +92,6 @@ class DeleteTask(Task):
 
     def execute(self, driver_factory):
         resource = self._resource
-        driver = driver_factory.get(resource['driver'])
+        driver = driver_factory.get(resource['type'])
         driver.stop(resource)
         return resource

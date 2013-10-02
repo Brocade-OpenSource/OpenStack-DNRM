@@ -41,8 +41,8 @@ class TasksTestCase(base.BaseTestCase):
         return mock_object
 
     def _make_resource(self):
-        return dict(status=resources.STATE_STOPPED, type='foobar',
-                    driver='fake-driver')
+        return dict(status=resources.STATE_STOPPED, klass='foobar',
+                    type='fake-driver')
 
     def test_start_task(self):
         resource = self._make_resource()

@@ -75,7 +75,7 @@ class FiltersTestCase(base.BaseTestCase):
 class ResourceTestCase(base.DBBaseTestCase):
     @staticmethod
     def _create(resource_type='fake-resource-type'):
-        res = db.resource_create(resource_type, {'driver': 'fake-driver',
+        res = db.resource_create(resource_type, {'type': 'fake-driver',
                                                  'class': 'L3'})
         return res
 
