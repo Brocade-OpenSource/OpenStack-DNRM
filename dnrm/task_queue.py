@@ -77,7 +77,7 @@ class QueuedTaskWorker(Worker):
                 LOG.exception(_('Exception executing task %s.') % repr(task))
                 resource_id = task.get_resource_id()
                 LOG.debug(_('Resource state change: %(id)s/%(status)s') % {
-                    'id': resource['id'],
+                    'id': resource_id,
                     'status': task.fail_state,
                 })
                 db_api.resource_update(resource_id, {'status': task.fail_state,
