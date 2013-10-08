@@ -14,7 +14,6 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
 from dnrm import db
 
 
@@ -31,7 +30,7 @@ class Pool(object):
                                          'processing': False})
 
     def pop(self, count=1, processing=True):
-        search_opts = {'filters': {'pool': self.name}}
+        search_opts = {'filters': {'pool': self.name, 'allocated': False}}
         if count is not None:
             search_opts['limit'] = count
         resources = db.resource_find(search_opts)
@@ -40,11 +39,6 @@ class Pool(object):
                                                {'pool': None,
                                                 'processing': processing}))
         return resources
-
-    def pop_resource(self, resource_id):
-        resource = (db.resource_update(resource_id, {'pool': None,
-                                                     'processing': True}))
-        return resource
 
     def list(self):
         resources = db.resource_find({'filters': {'pool': self.name,

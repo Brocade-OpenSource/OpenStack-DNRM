@@ -29,7 +29,7 @@ class UnusedSet(object):
             resource.update(res)
         if len(resources) < (count or 0):
             try:
-                for _i in xrange(count):
+                for _i in xrange(count - len(resources)):
                     driver = self.driver_factory.get(self.driver_name)
                     resource = driver.prepare_resource(state)
                     resource['processing'] = True

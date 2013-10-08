@@ -48,7 +48,7 @@ class PoolTestCase(base.BaseTestCase):
 
         self.db.resource_find.assert_called_with({
             'limit': 1,
-            'filters': {'pool': self.pool_name}
+            'filters': {'allocated': False, 'pool': self.pool_name}
         })
         self.db.resource_update.assert_called_with('fake-uuid',
                                                    {'pool': None,
@@ -72,7 +72,7 @@ class PoolTestCase(base.BaseTestCase):
 
         self.db.resource_find.assert_called_with({
             'limit': 2,
-            'filters': {'pool': self.pool_name}
+            'filters': {'allocated': False, 'pool': self.pool_name}
         })
 
         self.assertEqual(1, self.db.resource_find.call_count)
@@ -81,18 +81,6 @@ class PoolTestCase(base.BaseTestCase):
         calls = [mock.call('fake-uuid-1', {'pool': None, 'processing': True}),
                  mock.call('fake-uuid-2', {'pool': None, 'processing': True})]
         self.db.resource_update.assert_has_calls(calls)
-
-    def test_pop_resource(self):
-        resources = {'id': 'fake-uuid', 'pool': None}
-        self.db.resource_update.return_value = resources
-
-        self.pool.pop_resource('fake-uuid')
-
-        self.db.resource_update.assert_called_with('fake-uuid',
-                                                   {'pool': None,
-                                                    'processing': True})
-
-        self.assertEqual(1, self.db.resource_update.call_count)
 
     def test_list(self):
         resources = [{'id': 'fake-uuid-1', 'pool': self.pool_name},
