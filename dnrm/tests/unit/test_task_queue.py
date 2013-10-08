@@ -17,6 +17,7 @@
 import mock
 
 import dnrm.common.config  # noqa
+from dnrm.db import api as db_api
 from dnrm.resources import base as resource_base
 from dnrm import task_queue
 from dnrm import tasks
@@ -29,7 +30,9 @@ from eventlet import queue
 class TestTask(tasks.Task):
     def __init__(self, process_state=resource_base.STATE_ERROR,
                  success_state=resource_base.STATE_ERROR,
-                 fail_state=resource_base.STATE_ERROR):
+                 fail_state=resource_base.STATE_ERROR,
+                 in_states=(resource_base.STATE_ERROR,)):
+        self.in_states = in_states
         self.process_state = process_state
         self.success_state = success_state
         self.fail_state = fail_state
@@ -65,6 +68,15 @@ class MockedEventletTestCase(base.BaseTestCase):
 
 class TaskQueueTestCase(MockedEventletTestCase):
     """TaskQueue test case."""
+    def setUp(self):
+        self.old_impl = db_api.IMPL
+        db_api.IMPL = mock.MagicMock()
+        self.db = db_api.IMPL
+        super(TaskQueueTestCase, self).setUp()
+
+    def tearDown(self):
+        super(TaskQueueTestCase, self).tearDown()
+        db_api.IMPL = self.old_impl
 
     def test_push(self):
         task = TestTask()
@@ -93,8 +105,14 @@ class QueuedTaskWorkerTestCase(base.BaseTestCase):
         self.driver_factory = mock.MagicMock()
         self.worker = task_queue.QueuedTaskWorker(self.task_queue,
                                                   self.driver_factory)
-        self.db = self._mock('dnrm.db.api')
+        self.old_impl = db_api.IMPL
+        db_api.IMPL = mock.MagicMock()
+        self.db = db_api.IMPL
         super(QueuedTaskWorkerTestCase, self).setUp()
+
+    def tearDown(self):
+        super(QueuedTaskWorkerTestCase, self).tearDown()
+        db_api.IMPL = self.old_impl
 
     def _mock(self, function, retval=None, side_effect=None):
         patcher = mock.patch(function)
@@ -108,21 +126,33 @@ class QueuedTaskWorkerTestCase(base.BaseTestCase):
 
     def test_start(self):
         task = mock.MagicMock()
+        task.get_resource_id.return_value = 'fake-id'
+        task.process_state = resource_base.STATE_STARTING
+        task.in_states = (resource_base.STATE_ERROR,)
+        self.db.resource_compare_update.return_value = 1
         resource = {'id': 'fake-id'}
         task.execute.return_value = resource
         self.task_queue.push(task)
         self.worker.start()
         greenthread.sleep()
         task.execute.assert_called_once(self.driver_factory)
-        self.resource_update.assert_called_with('fake-id', resource)
+        self.db.resource_compare_update.assert_called_once_with(
+            'fake-id', {'status': (resource_base.STATE_ERROR,)},
+            {'status': resource_base.STATE_STARTING, 'processing': True})
 
     def test_execute_exception(self):
         task = mock.MagicMock()
+        task.in_states = (resource_base.STATE_ERROR,)
+        task.get_resource_id.return_value = 'fake-id'
         task.execute.side_effect = RuntimeError('fake-exception for test')
+        self.db.resource_compare_update.return_value = 1
         self.task_queue.push(task)
         self.worker.start()
         greenthread.sleep()
         task.execute.assert_called_once(self.driver_factory)
+        self.db.resource_compare_update.assert_called_once_with(
+            task.get_resource_id(), {'status': (resource_base.STATE_ERROR,)},
+            mock.ANY)
 
     def test_stop(self):
         self.worker.start()

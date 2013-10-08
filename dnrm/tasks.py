@@ -47,6 +47,7 @@ class Task(object):
 class StartTask(Task):
     """Task that puts resource to started state."""
 
+    in_states = (base.STATE_STOPPED,)
     process_state = base.STATE_STARTING
     success_state = base.STATE_STARTED
     fail_state = base.STATE_ERROR
@@ -61,6 +62,7 @@ class StartTask(Task):
 class StopTask(Task):
     """Task that puts resource to stopped state."""
 
+    in_states = (base.STATE_STARTED,)
     process_state = base.STATE_STOPPING
     success_state = base.STATE_STOPPED
     fail_state = base.STATE_ERROR
@@ -75,6 +77,7 @@ class StopTask(Task):
 class WipeTask(Task):
     """Task that wipes task state."""
 
+    in_states = (base.STATE_STARTED,)
     process_state = base.STATE_WIPING
     success_state = base.STATE_STARTED
     fail_state = base.STATE_ERROR
@@ -89,6 +92,7 @@ class WipeTask(Task):
 class DeleteTask(Task):
     """Task that marks resource as deleted."""
 
+    in_states = (base.STATE_ERROR, base.STATE_STOPPED)
     process_state = base.STATE_DELETING
     success_state = base.STATE_DELETED
     fail_state = base.STATE_ERROR

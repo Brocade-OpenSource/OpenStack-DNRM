@@ -106,14 +106,15 @@ class TaskQueue(object):
         Adds new task to queue. Unblocks one worker waiting on pop call if
         there is any.
         """
-        # TODO(anfrolov): save task to database
         resource_id = task.get_resource_id()
         LOG.debug(_('Resource state change: %(id)s/%(status)s') % {
             'id': resource_id,
             'status': task.process_state,
         })
-        db_api.resource_update(resource_id, {'status': task.process_state,
-                                             'processing': True})
+        result = db_api.resource_compare_update(
+            resource_id, {'status': task.in_states},
+            {'status': task.process_state, 'processing': True})
+        assert result is not None
         self._queue.put(task)
 
     def pop(self, block=True, timeout=None):
@@ -126,7 +127,6 @@ class TaskQueue(object):
         return None (timeout is ignored in that case).
         """
         try:
-            # TODO(anfrolov): mark task as task in process in database
             return self._queue.get(block=block, timeout=timeout)
         except queue.Empty:
             return None
