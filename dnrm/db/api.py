@@ -63,3 +63,7 @@ def resource_find(filter_opts={}):
 
 def resource_count(filter_opts={}):
     return IMPL.resource_count(filter_opts)
+
+
+def resource_compare_update(id, filters, values):
+    return IMPL.resource_compare_update(id, filters, values)

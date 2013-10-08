@@ -117,3 +117,18 @@ class ResourceTestCase(base.DBBaseTestCase):
         self.assertEqual(2, len(resources2))
         for i, r in enumerate(resources):
             self.assertDictEqual(r, dict(resources2[i]))
+
+    def test_compare_update(self):
+        resource1 = self._create()
+        values = {'processing': not resource1['processing']}
+        resource2 = db.resource_compare_update(resource1['id'], {}, values)
+        resource1.update(values)
+        self.assertDictEqual(resource1, resource2)
+
+    def test_compare_not_update(self):
+        resource1 = self._create()
+        values = {'processing': not resource1['processing']}
+        filters = {'allocated': not resource1['allocated']}
+        resource2 = db.resource_compare_update(resource1['id'], filters,
+                                               values)
+        self.assertIsNone(resource2)

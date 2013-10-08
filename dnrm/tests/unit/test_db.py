@@ -56,3 +56,8 @@ class ResourceTestCase(base.BaseTestCase):
         args = [{}]
         db.resource_find(*args)
         self.mock.resource_find.assert_with_call(args)
+
+    def test_compare_update(self):
+        args = [0, {1: 2}, {3: 4}]
+        db.resource_compare_update(*args)
+        self.mock.resource_compare_update.assert_with_call(args)

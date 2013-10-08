@@ -139,8 +139,7 @@ def resource_update(id, values):
     with session.begin():
         resource = _resource_get_by_id(id, session=session)
         _update_resource(resource, values)
-
-    return _resource_to_dict(resource)
+        return _resource_to_dict(resource)
 
 
 def resource_delete(id):
@@ -151,17 +150,18 @@ def resource_delete(id):
         raise exceptions.ResourceNotFound(id=id)
 
 
-def make_query(model, kwargs):
-    kwargs = kwargs.copy()
+def make_query(model, search_opts, session=None):
+    search_opts = copy.deepcopy(search_opts)
 
-    filters = kwargs.pop('filters', {})
-    limit = kwargs.pop('limit', None)
-    offset = kwargs.pop('offset', None)
+    filters = search_opts.pop('filters', {})
+    limit = search_opts.pop('limit', None)
+    offset = search_opts.pop('offset', None)
 
-    if kwargs:
-        raise ValueError(_('Unexpected kwargs: %s') % ', '.join(kwargs.keys()))
+    if search_opts:
+        raise ValueError(_('Unexpected search options: %(options)s'),
+                         options=', '.join(search_opts.keys()))
 
-    query = model_query(models.Resource)
+    query = model_query(models.Resource, session=session)
 
     condition = filters_to_condition(model, model.FILTER_FIELDS, filters)
 
@@ -177,11 +177,25 @@ def make_query(model, kwargs):
     return query
 
 
-def resource_find(kwargs):
-    query = make_query(models.Resource, kwargs)
+def resource_find(search_opts):
+    query = make_query(models.Resource, search_opts)
     return [_resource_to_dict(resource) for resource in query.all()]
 
 
-def resource_count(kwargs):
-    query = make_query(models.Resource, kwargs)
+def resource_count(search_opts):
+    query = make_query(models.Resource, search_opts)
     return query.count()
+
+
+def resource_compare_update(id, filters, values):
+    session = db_session.get_session()
+    with session.begin():
+        filters = copy.deepcopy(filters)
+        filters[id] = id
+        query = make_query(models.Resource, {'filters': filters}, session)
+        resource = query.first()
+        if resource:
+            _update_resource(resource, values)
+            return _resource_to_dict(resource)
+        else:
+            return None
