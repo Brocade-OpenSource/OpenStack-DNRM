@@ -18,8 +18,11 @@ import eventlet
 from oslo.config import cfg
 
 from dnrm import db
+from dnrm.openstack.common import log
+from dnrm.resources import base
 
 CONF = cfg.CONF
+LOG = log.getLogger(__name__)
 
 
 class Cleaner(object):
@@ -28,9 +31,13 @@ class Cleaner(object):
 
     def run(self):
         while self._running:
-            resources = db.resource_find({'filters': {'processing': False,
-                                                      'deleted': True}})
+            resources = db.resource_find(
+                {'filters': {'processing': False,
+                             'status': base.STATE_DELETED}}
+            )
             for resource in resources:
+                LOG.debug(_('Delete resource %(resource_id)s'),
+                          resource_id=resource['id'])
                 db.resource_delete(resource['id'])
             eventlet.sleep(CONF.sleep_time)
 
