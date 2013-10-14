@@ -36,8 +36,7 @@ class Cleaner(object):
                              'status': base.STATE_DELETED}}
             )
             for resource in resources:
-                LOG.debug(_('Delete resource %(resource_id)s'),
-                          resource_id=resource['id'])
+                LOG.debug(_('Delete resource %s'), resource['id'])
                 db.resource_delete(resource['id'])
             eventlet.sleep(CONF.sleep_time)
 
