@@ -191,8 +191,8 @@ def resource_compare_update(id, filters, values):
     session = db_session.get_session()
     with session.begin():
         filters = copy.deepcopy(filters)
-        filters['id'] = id
         query = make_query(models.Resource, {'filters': filters}, session)
+        query = query.filter(models.Resource.id == id)
         resource = query.first()
         if resource:
             _update_resource(resource, values)

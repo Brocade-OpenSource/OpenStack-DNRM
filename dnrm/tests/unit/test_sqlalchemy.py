@@ -132,3 +132,14 @@ class ResourceTestCase(base.DBBaseTestCase):
         resource2 = db.resource_compare_update(resource1['id'], filters,
                                                values)
         self.assertIsNone(resource2)
+
+    def test_compare_update_updates_right_resource(self):
+        self._create()
+        resource2 = self._create()
+        self._create()
+        values = {'status': 'ERROR'}
+        filters = {'allocated': resource2['allocated']}
+        retval = db.resource_compare_update(resource2['id'], filters, values)
+        self.assertIsNotNone(retval)
+        resource2 = db.resource_get_by_id(resource2['id'])
+        self.assertEqual('ERROR', resource2['status'])
