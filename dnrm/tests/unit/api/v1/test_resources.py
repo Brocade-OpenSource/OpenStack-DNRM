@@ -87,3 +87,11 @@ class ResourceApiTest(base.DBBaseTestCase):
         self.manager.get.return_value = {'id': FAKE_RESOURCE_ID}
         self.controller.delete(req, FAKE_RESOURCE_ID)
         self.manager.delete.assert_called_with(None, FAKE_RESOURCE_ID, False)
+
+    def test_resource_force_delete(self):
+        url = '/v1/resources/%s?force=True' % FAKE_RESOURCE_ID
+        req = fakes.HTTPRequest.blank(url)
+        req.method = 'DELETE'
+        self.manager.get.return_value = {'id': FAKE_RESOURCE_ID}
+        self.controller.delete(req, FAKE_RESOURCE_ID)
+        self.manager.delete.assert_called_with(None, FAKE_RESOURCE_ID, True)

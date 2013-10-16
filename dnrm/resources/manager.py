@@ -85,10 +85,11 @@ class ResourceManager(object):
 
     def delete(self, context, resource_id, force=False):
         resource = db.resource_get_by_id(resource_id)
-        if resource['processing']:
-            raise exceptions.ResourceProcessing(resource_id=resource_id)
-        if resource['allocated']:
-            raise exceptions.ResourceAllocated(resource_id=resource_id)
+        if not force:
+            if resource['processing']:
+                raise exceptions.ResourceProcessing(resource_id=resource_id)
+            if resource['allocated']:
+                raise exceptions.ResourceAllocated(resource_id=resource_id)
         resource = db.resource_update(resource_id, {'processing': True})
         task = tasks.DeleteTask(resource, force)
         self.task_queue.push(task)
